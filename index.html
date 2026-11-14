@@ -113,22 +113,17 @@
     <!-- MAIN CONTENT -->
     <div class="flex-1 overflow-hidden relative min-h-0">
         
-        <!-- Container ซ่อนไว้สำหรับ Render PDF พื้นหลัง -->
         <div id="hiddenPdfContainer" style="position: absolute; left: -9999px; top: 0; z-index: -100;"></div>
 
-        <!-- PUBLIC VIEW (ดีไซน์ Split Screen: ฝั่งซ้ายคู่มือ ฝั่งขวาล็อกอิน) -->
+        <!-- PUBLIC VIEW -->
         <div id="publicView" class="absolute inset-0 overflow-y-auto bg-slate-50">
             <div id="splitScreenWrapper" class="flex flex-col lg:flex-row min-h-full w-full">
                 
-                <!-- ฝั่งซ้าย (โลโก้โรงเรียน) -->
-                <!-- เพิ่ม pb-20 เพื่อเผื่อพื้นที่ให้ส่วนสีขาวดึงขึ้นมาทับบนมือถือ -->
                 <div class="w-full lg:w-5/12 xl:w-1/2 bg-gradient-to-br from-[#0097a7] to-[#005662] p-8 md:p-12 xl:p-16 pb-20 lg:pb-16 flex flex-col justify-center relative overflow-hidden text-white min-h-[35vh] lg:min-h-full shadow-2xl z-10">
-                    <!-- ของตกแต่งพื้นหลัง -->
                     <div class="absolute top-[-10%] left-[-10%] w-64 h-64 bg-white opacity-10 rounded-full blur-3xl animate-blob"></div>
                     <div class="absolute bottom-[-10%] right-[-10%] w-80 h-80 bg-[#00E5FF] opacity-20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
                     
                     <div class="relative z-10 max-w-lg mx-auto lg:mx-0 w-full animate-slideUp">
-                        <!-- โลโก้และชื่อระบบ -->
                         <div class="flex items-center gap-5 mb-4 lg:mb-8 lg:border-b lg:border-white/20 pb-4 lg:pb-8">
                             <div class="bg-white p-2.5 rounded-2xl shadow-xl shrink-0">
                                 <img id="publicLogo" src="https://i.postimg.cc/xcgmM5DP/image.png" crossorigin="anonymous" onerror="this.style.display='none'" alt="School Logo" class="w-16 h-16 md:w-20 md:h-20 object-contain rounded-xl">
@@ -140,41 +135,28 @@
                             </div>
                         </div>
                         
-                        <!-- คู่มือการใช้งานระบบ (แสดงบนคอมพิวเตอร์เท่านั้น) -->
                         <div class="hidden lg:block bg-black/15 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
                             <h3 class="text-lg md:text-xl font-bold mb-6 flex items-center"><i class="fas fa-book-open mr-3 text-cyan-300"></i> คู่มือการใช้งานระบบเบื้องต้น</h3>
                             <ul class="space-y-5">
                                 <li class="flex items-start gap-4">
                                     <div class="w-8 h-8 rounded-full bg-white text-[#0097a7] flex items-center justify-center font-bold shrink-0 mt-0.5 shadow-md text-sm">1</div>
-                                    <div>
-                                        <h4 class="font-bold text-[15px]">เลือกโหมดผู้ใช้งาน</h4>
-                                        <p class="text-[13px] text-cyan-50 mt-1 leading-relaxed">กดปุ่มสลับเลือกระหว่างโหมด <span class="font-bold text-white">"นักเรียน"</span> หรือ <span class="font-bold text-white">"ครู/ผู้ดูแล"</span></p>
-                                    </div>
+                                    <div><h4 class="font-bold text-[15px]">เลือกโหมดผู้ใช้งาน</h4><p class="text-[13px] text-cyan-50 mt-1 leading-relaxed">กดปุ่มสลับเลือกระหว่างโหมด <span class="font-bold text-white">"นักเรียน"</span> หรือ <span class="font-bold text-white">"ครู/ผู้ดูแล"</span></p></div>
                                 </li>
                                 <li class="flex items-start gap-4">
                                     <div class="w-8 h-8 rounded-full bg-white text-[#0097a7] flex items-center justify-center font-bold shrink-0 mt-0.5 shadow-md text-sm">2</div>
-                                    <div>
-                                        <h4 class="font-bold text-[15px]">กรอกข้อมูลเข้าสู่ระบบ</h4>
-                                        <p class="text-[13px] text-cyan-50 mt-1 leading-relaxed"><b>• นักเรียน:</b> ใช้เลขประจำตัวประชาชน 13 หลัก<br><b>• ครู:</b> ใช้ Username และ Password ที่ได้รับจากระบบ</p>
-                                    </div>
+                                    <div><h4 class="font-bold text-[15px]">กรอกข้อมูลเข้าสู่ระบบ</h4><p class="text-[13px] text-cyan-50 mt-1 leading-relaxed"><b>• นักเรียน:</b> ใช้เลข ปชช. 13 หลัก<br><b>• ครู:</b> ใช้ Username และ Password</p></div>
                                 </li>
                                 <li class="flex items-start gap-4">
                                     <div class="w-8 h-8 rounded-full bg-white text-[#0097a7] flex items-center justify-center font-bold shrink-0 mt-0.5 shadow-md text-sm">3</div>
-                                    <div>
-                                        <h4 class="font-bold text-[15px]">ตรวจสอบและดาวน์โหลดเอกสาร</h4>
-                                        <p class="text-[13px] text-cyan-50 mt-1 leading-relaxed">เลือกปีการศึกษาและภาคเรียน กดปุ่มค้นหาเพื่อดูผลการเรียนและบันทึกสมุดพก (ปพ.6) เป็นไฟล์ PDF ทันที</p>
-                                    </div>
+                                    <div><h4 class="font-bold text-[15px]">ตรวจสอบและดาวน์โหลดเอกสาร</h4><p class="text-[13px] text-cyan-50 mt-1 leading-relaxed">เลือกปีการศึกษาและภาคเรียน กดค้นหาเพื่อดูและบันทึก ปพ.6</p></div>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                <!-- ฝั่งขวา (ฟอร์มและคู่มือบนมือถือ) -->
-                <!-- ปรับ -mt-10 และ rounded-t-[2.5rem] เพื่อให้ซ้อนทับกรอบสีเขียวบนมือถือ -->
                 <div class="w-full lg:w-7/12 xl:w-1/2 bg-[#F8FAFC] flex flex-col items-center justify-start lg:justify-center p-6 md:p-12 relative min-h-[65vh] lg:min-h-full z-20 -mt-10 rounded-t-[2.5rem] lg:mt-0 lg:rounded-none shadow-[0_-15px_40px_rgba(0,0,0,0.1)] lg:shadow-none">
                     
-                    <!-- Login/Search Card -->
                     <div id="formBox" class="w-full max-w-[460px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden relative z-10 animate-fadeIn mt-2 lg:mt-0">
                         <div class="p-8 sm:p-10">
                             <div class="mb-8 text-center sm:text-left">
@@ -188,7 +170,6 @@
                                 <button type="button" id="btnModeStudent" class="flex-1 py-2.5 sm:py-3 text-[13px] sm:text-[14px] font-bold bg-white text-[#0097a7] rounded-lg shadow-sm border border-slate-200/50 focus:outline-none" onclick="window.switchLoginMode('student')">นักเรียน</button>
                             </div>
 
-                            <!-- ฟอร์มค้นหาสำหรับนักเรียน (ค่าเริ่มต้น) -->
                             <div id="studentFormMode" class="space-y-4 sm:space-y-5 w-full animate-fadeIn">
                                 <div>
                                     <label class="block text-slate-700 text-xs font-bold mb-1.5 ml-1">รหัสประจำตัวประชาชน 13 หลัก</label>
@@ -207,9 +188,7 @@
                                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
                                                 <i class="fas fa-calendar-alt text-[14px]"></i>
                                             </div>
-                                            <select id="searchYear" class="w-full pl-10 pr-7 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-700 outline-none appearance-none cursor-pointer bg-slate-50 focus:bg-white text-[14px] shadow-sm">
-                                                <!-- จะถูกสร้างโดย JavaScript -->
-                                            </select>
+                                            <select id="searchYear" class="w-full pl-10 pr-7 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-700 outline-none appearance-none cursor-pointer bg-slate-50 focus:bg-white text-[14px] shadow-sm"></select>
                                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                                                 <i class="fas fa-chevron-down text-[10px]"></i>
                                             </div>
@@ -239,7 +218,6 @@
                                 </div>
                             </div>
 
-                            <!-- ฟอร์มเข้าสู่ระบบสำหรับครู/ผู้ดูแล (ซ่อนไว้เป็นค่าเริ่มต้น) -->
                             <div id="teacherFormMode" class="hidden space-y-4 sm:space-y-5 w-full animate-fadeIn">
                                 <div>
                                     <label class="block text-slate-700 text-xs font-bold mb-1.5 ml-1">Username (ชื่อผู้ใช้)</label>
@@ -247,7 +225,7 @@
                                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
                                             <i class="fas fa-user-tie text-[14px]"></i>
                                         </div>
-                                        <input type="text" id="username" class="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-[14px] outline-none placeholder:text-slate-400 bg-slate-50 focus:bg-white shadow-sm" placeholder="กรอกชื่อผู้ใช้" onkeypress="if(event.key === 'Enter') document.getElementById('password').focus()">
+                                        <input type="text" id="username" class="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-[14px] text-slate-800 outline-none placeholder:text-slate-400 bg-slate-50 focus:bg-white shadow-sm" placeholder="กรอกชื่อผู้ใช้" onkeypress="if(event.key === 'Enter') document.getElementById('password').focus()">
                                     </div>
                                 </div>
                                 
@@ -257,7 +235,7 @@
                                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
                                             <i class="fas fa-lock text-[14px]"></i>
                                         </div>
-                                        <input type="password" id="password" class="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-[14px] outline-none placeholder:text-slate-400 bg-slate-50 focus:bg-white shadow-sm" placeholder="กรอกรหัสผ่าน" onkeypress="if(event.key === 'Enter') window.login()">
+                                        <input type="password" id="password" class="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-[14px] text-slate-800 outline-none placeholder:text-slate-400 bg-slate-50 focus:bg-white shadow-sm" placeholder="กรอกรหัสผ่าน" onkeypress="if(event.key === 'Enter') window.login()">
                                     </div>
                                 </div>
                                 
@@ -270,52 +248,27 @@
                         </div>
                     </div>
 
-                    <!-- คู่มือสำหรับมือถือ (แสดงเฉพาะหน้าจอเล็ก) ย้ายมาอยู่ด้านล่างสุด -->
                     <div class="block lg:hidden w-full max-w-[460px] mt-8 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 mb-8">
                         <h3 class="text-lg font-bold mb-5 flex items-center text-[#0097a7]">
                             <i class="fas fa-book-open mr-2"></i> คู่มือการใช้งานเบื้องต้น
                         </h3>
                         <ul class="space-y-4">
-                            <li class="flex items-start gap-3">
-                                <div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">1</div>
-                                <div>
-                                    <h4 class="font-bold text-[14px] text-slate-800">เลือกโหมดผู้ใช้งาน</h4>
-                                    <p class="text-[12px] text-slate-500 mt-0.5">นักเรียน หรือ ครู/ผู้ดูแล</p>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">2</div>
-                                <div>
-                                    <h4 class="font-bold text-[14px] text-slate-800">กรอกข้อมูล</h4>
-                                    <p class="text-[12px] text-slate-500 mt-0.5">นักเรียนใช้เลข ปชช. 13 หลัก, ครูใช้ Username</p>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">3</div>
-                                <div>
-                                    <h4 class="font-bold text-[14px] text-slate-800">ตรวจสอบและดาวน์โหลด</h4>
-                                    <p class="text-[12px] text-slate-500 mt-0.5">กดค้นหาเพื่อดูและบันทึก ปพ.6 เป็น PDF</p>
-                                </div>
-                            </li>
+                            <li class="flex items-start gap-3"><div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">1</div><div><h4 class="font-bold text-[14px] text-slate-800">เลือกโหมดผู้ใช้งาน</h4><p class="text-[12px] text-slate-500 mt-0.5">นักเรียน หรือ ครู/ผู้ดูแล</p></div></li>
+                            <li class="flex items-start gap-3"><div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">2</div><div><h4 class="font-bold text-[14px] text-slate-800">กรอกข้อมูล</h4><p class="text-[12px] text-slate-500 mt-0.5">นักเรียนใช้เลข ปชช. 13 หลัก, ครูใช้ Username</p></div></li>
+                            <li class="flex items-start gap-3"><div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">3</div><div><h4 class="font-bold text-[14px] text-slate-800">ตรวจสอบและดาวน์โหลด</h4><p class="text-[12px] text-slate-500 mt-0.5">กดค้นหาเพื่อดูและบันทึก ปพ.6 เป็น PDF</p></div></li>
                         </ul>
                     </div>
 
                 </div>
             </div>
 
-            <!-- RESULT CONTAINER (ซ่อนไว้จนกว่าจะค้นหา จะแสดงต่อท้ายหน้าจอ) -->
+            <!-- RESULT CONTAINER (ซ่อนไว้จนกว่าจะค้นหา) -->
             <div id="publicResultContainer" class="w-full max-w-5xl hidden flex-col items-center z-20 relative px-4 pb-20 mx-auto mt-12 animate-slideUp">
                 <div class="w-full flex flex-col sm:flex-row justify-between items-center bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200 mb-6 gap-4">
-                    <div class="flex items-center text-slate-800 font-bold text-lg sm:text-xl pl-2">
-                        <i class="fas fa-file-alt text-primary mr-3 text-xl sm:text-2xl"></i> ผลการเรียนของนักเรียน
-                    </div>
+                    <div class="flex items-center text-slate-800 font-bold text-lg sm:text-xl pl-2"><i class="fas fa-file-alt text-primary mr-3 text-xl sm:text-2xl"></i> ผลการเรียนของนักเรียน</div>
                     <div class="flex gap-2 w-full sm:w-auto">
-                        <button type="button" onclick="window.exportPublicPDF()" class="flex-1 sm:flex-none bg-primary hover:bg-[#00838f] text-white py-2 sm:py-2.5 px-5 sm:px-6 rounded-xl shadow-sm font-bold transition flex items-center justify-center text-sm">
-                            <i class="fas fa-download mr-2"></i> บันทึก PDF
-                        </button>
-                        <button type="button" onclick="window.resetPublicView()" class="flex-1 sm:flex-none bg-slate-100 hover:bg-slate-200 text-slate-600 py-2 sm:py-2.5 px-5 sm:px-6 rounded-xl font-bold transition flex items-center justify-center border border-slate-200 text-sm">
-                            <i class="fas fa-times mr-2"></i> ปิด
-                        </button>
+                        <button type="button" onclick="window.exportPublicPDF()" class="flex-1 sm:flex-none bg-primary hover:bg-[#00838f] text-white py-2 sm:py-2.5 px-5 sm:px-6 rounded-xl shadow-sm font-bold transition flex items-center justify-center text-sm"><i class="fas fa-download mr-2"></i> บันทึก PDF</button>
+                        <button type="button" onclick="window.resetPublicView()" class="flex-1 sm:flex-none bg-slate-100 hover:bg-slate-200 text-slate-600 py-2 sm:py-2.5 px-5 sm:px-6 rounded-xl font-bold transition flex items-center justify-center border border-slate-200 text-sm"><i class="fas fa-times mr-2"></i> ปิด</button>
                     </div>
                 </div>
                 <!-- ส่วนแสดงผล PDF จำลองบนหน้าเว็บ -->
@@ -377,18 +330,16 @@
     // ==========================================
     // 🟢 การตั้งค่า Supabase
     // ==========================================
-    // ==========================================
-// 🟢 การตั้งค่า Supabase
-// ==========================================
-const SUPABASE_URL = 'https://ubmqhmuhfujwrezcspez.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVibXFobXVoZnVqd3JlemNzcGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2MzQ3MDcsImV4cCI6MjExMDIxMDcwN30.GlhIiZFTwrwUTloPIgk3xf50eVzCJAEgWn5ot94xgPE';
-
-try {
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} catch (error) {
-    console.warn("Supabase Init Error:", error);
-}
-
+    const SUPABASE_URL = 'https://ubmqhmuhfujwrezcspez.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVibXFobXVoZnVqd3JlemNzcGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2MzQ3MDcsImV4cCI6MjExMDIxMDcwN30.GlhIiZFTwrwUTloPIgk3xf50eVzCJAEgWn5ot94xgPE';
+    
+    // ประกาศตัวแปรเก็บ Client เพื่อไม่ให้ไปตีกับไลบรารีของ Supabase
+    let dbClient;
+    try {
+        dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (error) {
+        console.warn("Supabase Init Error:", error);
+    }
 
     // ==========================================
     // UI Core Functions (Supabase Version)
@@ -562,16 +513,16 @@ try {
     // DATABASE FETCHING (SUPABASE)
     // ==========================================
     window.fetchDatabase = async function() {
-        if (!supabase) return;
+        if (!dbClient) return;
         try {
             const [u, a, s, sub, sc, ev, set] = await Promise.all([
-                supabase.from('users').select('*'),
-                supabase.from('assignments').select('*'),
-                supabase.from('students').select('*'),
-                supabase.from('subjects').select('*'),
-                supabase.from('scores').select('*'),
-                supabase.from('evaluations').select('*'),
-                supabase.from('settings').select('*')
+                dbClient.from('users').select('*'),
+                dbClient.from('assignments').select('*'),
+                dbClient.from('students').select('*'),
+                dbClient.from('subjects').select('*'),
+                dbClient.from('scores').select('*'),
+                dbClient.from('evaluations').select('*'),
+                dbClient.from('settings').select('*')
             ]);
 
             db.users = u.data ? u.data.map(r => ({id: r.id, username: r.username, password: r.password, role: r.role, name: r.name, signatureUrl: r.signature_url || ''})) : [];
@@ -597,14 +548,14 @@ try {
     // AUTHENTICATION (SUPABASE)
     // ==========================================
     window.login = async function() {
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         const user = document.getElementById('username').value.trim(); 
         const pass = document.getElementById('password').value.trim();
         if(!user || !pass) return window.customAlert('กรุณากรอก Username และ Password', 'error');
         
         window.showLoader('ตรวจสอบสิทธิ์...');
         
-        const { data, error } = await supabase.from('users').select('*').eq('username', user).eq('password', pass).single();
+        const { data, error } = await dbClient.from('users').select('*').eq('username', user).eq('password', pass).single();
         
         if (error || !data) {
             window.hideLoader(); window.customAlert('ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง', 'error');
@@ -798,11 +749,11 @@ try {
     };
     
     window.saveSystemSettings = async function() {
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         let setObj = { systemName: document.getElementById('setSystemName').value, logoUrl: document.getElementById('setLogoUrl').value, principalName: document.getElementById('setPrinName').value, principalSigUrl: document.getElementById('setPrinSigUrl').value, currentYear: document.getElementById('setCurrentYear').value, currentTerm: document.getElementById('setCurrentTerm').value };
         window.showLoader('กำลังบันทึกการตั้งค่า...');
         const updates = Object.keys(setObj).map(key => ({ key: key, value: setObj[key] }));
-        const { error } = await supabase.from('settings').upsert(updates);
+        const { error } = await dbClient.from('settings').upsert(updates);
         if (error) { window.hideLoader(); return window.customAlert('ล้มเหลวในการบันทึก', 'error'); }
         db.settings = setObj; window.updateDynamicSystemNames(); window.hideLoader(); window.customAlert('บันทึกการตั้งค่าระบบเรียบร้อยแล้ว', 'success');
     };
@@ -829,7 +780,7 @@ try {
     };
 
     window.addUserAction = async function() { 
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         let name = document.getElementById('addUName').value.trim(); let user = document.getElementById('addUUser').value.trim(); let pass = document.getElementById('addUPass').value.trim(); let role = document.getElementById('addURole').value; let sig = document.getElementById('addUSigUrl').value.trim();
         if(!name || !user || !pass) return window.customAlert('กรุณากรอกข้อมูลให้ครบ', 'warning'); 
         
@@ -837,9 +788,9 @@ try {
         let payload = { username: user, password: pass, role: role, name: name, signature_url: sig };
         let response;
         if(editingUserId) {
-            response = await supabase.from('users').update(payload).eq('id', editingUserId);
+            response = await dbClient.from('users').update(payload).eq('id', editingUserId);
         } else {
-            response = await supabase.from('users').insert([payload]);
+            response = await dbClient.from('users').insert([payload]);
         }
         
         if (response.error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
@@ -852,7 +803,7 @@ try {
         if(id === currentUser.id) return window.customAlert('ไม่สามารถลบตัวเองได้', 'error'); 
         window.customConfirm('ต้องการลบผู้ใช้งานนี้ใช่หรือไม่?', async function() {
             window.showLoader('กำลังลบข้อมูล...');
-            await supabase.from('users').delete().eq('id', id);
+            await dbClient.from('users').delete().eq('id', id);
             await window.fetchDatabase();
             window.hideLoader(); window.renderUserMgmt(document.getElementById('contentArea'));
         });
@@ -864,6 +815,7 @@ try {
     };
     
     window.uploadUserCSV = function() {
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         const fileInput = document.getElementById('csvUserFileInput'); const file = fileInput.files[0];
         if (!file) return window.customAlert('กรุณาเลือกไฟล์ CSV ก่อน', 'warning');
         window.showLoader('กำลังอ่านไฟล์...'); const reader = new FileReader();
@@ -878,7 +830,7 @@ try {
             }
             if(usersArray.length > 0) {
                 window.showLoader('กำลังบันทึกลง Supabase...');
-                const { error } = await supabase.from('users').upsert(usersArray, { onConflict: 'username' });
+                const { error } = await dbClient.from('users').upsert(usersArray, { onConflict: 'username' });
                 if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
                 await window.fetchDatabase();
                 window.hideLoader(); window.customAlert(`นำเข้าสำเร็จ ${usersArray.length} รายการ`, 'success'); 
@@ -954,7 +906,7 @@ try {
     };
     
     window.addSubjectAction = async function() { 
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         let lvl = document.getElementById('addSLevel').value.trim(); 
         let code = document.getElementById('addSCode').value.trim(); 
         let name = document.getElementById('addSName').value.trim(); 
@@ -964,7 +916,7 @@ try {
         if(!lvl || !code || !name || !credit) return window.customAlert('กรุณากรอกข้อมูลให้ครบ (ยกเว้นครูผู้สอน ปล่อยว่างได้)', 'warning'); 
         
         window.showLoader('กำลังบันทึก...');
-        const { error } = await supabase.from('subjects').insert([{ code: code, name: name, credit: parseFloat(credit), level: lvl, teacher_name: teacher }]);
+        const { error } = await dbClient.from('subjects').insert([{ code: code, name: name, credit: parseFloat(credit), level: lvl, teacher_name: teacher }]);
         if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว (รหัสวิชาซ้ำกับในระบบ)', 'error'); }
         
         await window.fetchDatabase();
@@ -974,7 +926,7 @@ try {
     window.deleteSubjectAction = async function(id) { 
         window.customConfirm(`ต้องการลบวิชาใช่หรือไม่?`, async function() {
             window.showLoader('กำลังลบข้อมูล...');
-            await supabase.from('subjects').delete().eq('id', id);
+            await dbClient.from('subjects').delete().eq('id', id);
             await window.fetchDatabase();
             window.hideLoader(); window.renderSubjectMgmt(document.getElementById('contentArea')); 
         });
@@ -986,12 +938,12 @@ try {
     };
     
     window.addAssignAction = async function() { 
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         let tid = document.getElementById('assTeacher').value; let room = document.getElementById('assRoom').value; 
         if(!tid || !room) return window.customAlert('กรุณาเลือกครูและห้องเรียน', 'warning'); 
         window.showLoader('กำลังบันทึก...');
         
-        const { error } = await supabase.from('assignments').insert([{ user_id: tid, class_room: room }]);
+        const { error } = await dbClient.from('assignments').insert([{ user_id: tid, class_room: room }]);
         if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว (มีการมอบหมายนี้อยู่แล้ว)', 'error'); }
         
         await window.fetchDatabase(); window.hideLoader(); window.customAlert('มอบหมายสิทธิ์สำเร็จ', 'success'); window.renderAssignMgmt(document.getElementById('contentArea'));
@@ -1000,7 +952,7 @@ try {
     window.deleteAssignAction = async function(tid, room) { 
         window.customConfirm(`ยกเลิกสิทธิ์ดูแลห้อง ${room} ใช่หรือไม่?`, async function() {
             window.showLoader('กำลังลบข้อมูล...');
-            await supabase.from('assignments').delete().eq('user_id', tid).eq('class_room', room);
+            await dbClient.from('assignments').delete().eq('user_id', tid).eq('class_room', room);
             await window.fetchDatabase(); window.hideLoader(); window.renderAssignMgmt(document.getElementById('contentArea')); 
         });
     };
@@ -1009,7 +961,7 @@ try {
         container.innerHTML = `
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
             <h2 class="text-2xl font-bold text-primary mb-2"><i class="fas fa-users text-secondary mr-2"></i> จัดการชั้นเรียน (ข้อมูลนักเรียน)</h2>
-            <p class="text-sm text-slate-500 mb-6">คุณสามารถเพิ่มนักเรียนทีละหลายๆ คนได้ผ่านแม่แบบ CSV</p>
+            <p class="text-sm text-slate-500 mb-6">คุณสามารถเพิ่มนักเรียนทีละคน หรือเพิ่มทีละหลายๆ คนผ่านแม่แบบ CSV ได้</p>
             
             <div class="flex flex-wrap gap-4 mb-6 bg-themebg/50 p-5 rounded-2xl border border-secondary/20 items-end">
                 <div>
@@ -1019,8 +971,35 @@ try {
                 <button onclick="window.loadStudentTable()" class="bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-sm transition-colors"><i class="fas fa-search mr-2"></i> โหลดข้อมูลนักเรียน</button>
             </div>
 
+            <!-- ฟอร์มเพิ่มนักเรียนทีละคน -->
             <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
-                <h3 class="font-bold text-slate-700 mb-4">นำเข้านักเรียนด้วยไฟล์ CSV ไปยังปีการศึกษาที่เลือก</h3>
+                <h3 class="font-bold text-slate-700 mb-4">เพิ่มนักเรียนใหม่ (ทีละคน)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">รหัส 13 หลัก</label>
+                        <input type="text" id="addStId13" maxlength="13" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="เช่น 1111111111111">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">เลขที่</label>
+                        <input type="number" id="addStNum" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="เช่น 1">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ชื่อ-สกุล (รวมคำนำหน้า)</label>
+                        <input type="text" id="addStName" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="เช่น ด.ช.รักเรียน ขยันยิ่ง">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ชั้น/ห้อง</label>
+                        <input type="text" id="addStClass" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="เช่น ป.1/1">
+                    </div>
+                    <div class="md:col-span-5 text-right mt-2">
+                        <button onclick="window.addSingleStudentAction()" class="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-md transition-colors"><i class="fas fa-plus mr-2"></i> เพิ่มนักเรียน</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ฟอร์มเพิ่มนักเรียนด้วยไฟล์ CSV -->
+            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
+                <h3 class="font-bold text-slate-700 mb-4">นำเข้านักเรียนด้วยไฟล์ CSV (ทีละหลายคน) ไปยังปีการศึกษาที่เลือก</h3>
                 <div class="flex flex-wrap gap-4 items-center">
                     <button onclick="window.downloadCSVTemplate()" class="bg-white text-primary border border-primary/30 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-themebg shadow-sm transition-colors flex items-center"><i class="fas fa-file-download mr-2"></i> 1. โหลดแม่แบบ CSV</button>
                     <div class="flex-1 relative">
@@ -1039,13 +1018,47 @@ try {
         setTimeout(window.loadStudentTable, 100);
     };
 
+    window.addSingleStudentAction = async function() {
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        
+        let year = document.getElementById('stuYear').value.trim();
+        let id13 = document.getElementById('addStId13').value.trim();
+        let number = document.getElementById('addStNum').value.trim();
+        let name = document.getElementById('addStName').value.trim();
+        let classRoom = document.getElementById('addStClass').value.trim();
+
+        if(!year || !id13 || !number || !name || !classRoom) return window.customAlert('กรุณากรอกข้อมูลให้ครบทุกช่อง', 'warning');
+        if(id13.length !== 13) return window.customAlert('รหัสประจำตัวประชาชนต้องมี 13 หลัก', 'warning');
+
+        window.showLoader('กำลังบันทึก...');
+        let payload = { id13: id13, number: parseInt(number), name: name, class_room: classRoom, year: year };
+        
+        const { error } = await dbClient.from('students').upsert([payload], { onConflict: 'id13,year' });
+        
+        if (error) { 
+            window.hideLoader(); 
+            return window.customAlert('ล้มเหลวในการบันทึกข้อมูล', 'error'); 
+        }
+        
+        await window.fetchDatabase();
+        window.hideLoader(); 
+        window.customAlert('เพิ่มนักเรียนสำเร็จ', 'success');
+        
+        document.getElementById('addStId13').value = '';
+        document.getElementById('addStNum').value = '';
+        document.getElementById('addStName').value = '';
+        // จงใจเหลือห้องเรียนไว้ เผื่อเพิ่มคนต่อไปในห้องเดียวกันได้รวดเร็วขึ้น
+        
+        window.loadStudentTable();
+    };
+
     window.downloadCSVTemplate = function() {
         const csvContent = "\uFEFFStudentID,Student,NoPrefix,FirstName,LastName,Class,Room\n1111111111111,1,ด.ช.,รักเรียน,ขยันยิ่ง,ป.1,1\n2222222222222,2,ด.ญ.,สวยใส,จิตใจดี,ม.1,1";
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", "แม่แบบ_นักเรียน.csv"); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
     };
 
     window.uploadCSV = function() {
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         const fileInput = document.getElementById('csvFileInput'); const file = fileInput.files[0];
         const year = document.getElementById('stuYear').value;
         if (!file || !year) return window.customAlert('กรุณาเลือกไฟล์ CSV และระบุปีการศึกษาก่อน', 'warning');
@@ -1062,7 +1075,7 @@ try {
             }
             if(studentsArray.length > 0) {
                 window.showLoader('กำลังบันทึกลง Supabase...');
-                const { error } = await supabase.from('students').upsert(studentsArray, { onConflict: 'id13,year' });
+                const { error } = await dbClient.from('students').upsert(studentsArray, { onConflict: 'id13,year' });
                 if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
                 await window.fetchDatabase(); window.hideLoader(); window.customAlert(`นำเข้าข้อมูลสำเร็จ ${studentsArray.length} รายการ`, 'success');
                 window.loadStudentTable(); fileInput.value = '';
@@ -1089,7 +1102,7 @@ try {
     window.deleteStudentAction = async function(id13, y) { 
         window.customConfirm(`ต้องการลบนักเรียนรหัส ${id13} ในปีการศึกษา ${y} ใช่หรือไม่?`, async function() {
             window.showLoader('กำลังลบ...');
-            await supabase.from('students').delete().eq('id13', id13).eq('year', y);
+            await dbClient.from('students').delete().eq('id13', id13).eq('year', y);
             await window.fetchDatabase(); window.hideLoader(); window.loadStudentTable();
         });
     };
@@ -1182,7 +1195,7 @@ try {
     };
     
     window.saveScores = async function() { 
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         window.showLoader('กำลังบันทึกคะแนนลง Supabase...'); 
         const subjCode = document.getElementById('scoreSubject').value; 
         const scoreYear = document.getElementById('scoreYear').value;
@@ -1197,7 +1210,7 @@ try {
         }); 
         
         if (upsertData.length > 0) {
-            const { error } = await supabase.from('scores').upsert(upsertData, { onConflict: 'id13, subject_code, year, term' });
+            const { error } = await dbClient.from('scores').upsert(upsertData, { onConflict: 'id13, subject_code, year, term' });
             if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
         }
         
@@ -1297,7 +1310,7 @@ try {
     };
 
     window.saveEvaluations = async function() { 
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         window.showLoader('กำลังบันทึก...'); 
         const evalYear = document.getElementById('evalYear').value;
         const evalTerm = document.getElementById('evalTerm').value;
@@ -1311,7 +1324,7 @@ try {
         }); 
 
         if (upsertData.length > 0) {
-            const { error } = await supabase.from('evaluations').upsert(upsertData, { onConflict: 'id13,year,term' });
+            const { error } = await dbClient.from('evaluations').upsert(upsertData, { onConflict: 'id13,year,term' });
             if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
             await window.fetchDatabase();
         }
@@ -1456,7 +1469,7 @@ try {
     };
 
     window.uploadBulkPP6ToDrive = async function() {
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         const yr = document.getElementById('pp6Year').value, selClass = document.getElementById('pp6Class').value;
         if(!yr || !selClass) return window.customAlert('กรุณาเลือกข้อมูลให้ครบ', 'warning');
         
@@ -1482,11 +1495,11 @@ try {
                     let resFetch = await fetch(base64str); let blob = await resFetch.blob();
                     
                     let fileName = `ปพ6_${st.id13}_${yr}.pdf`; let filePath = `${yr}/${selClass.replace('/','-')}/${fileName}`;
-                    const { error } = await supabase.storage.from('reports').upload(filePath, blob, { contentType: 'application/pdf', upsert: true });
+                    const { error } = await dbClient.storage.from('reports').upload(filePath, blob, { contentType: 'application/pdf', upsert: true });
                     
                     if (!error) {
-                        const { data: linkData } = supabase.storage.from('reports').getPublicUrl(filePath);
-                        await supabase.from('students').update({ pdf_link: linkData.publicUrl }).eq('id13', st.id13).eq('year', yr);
+                        const { data: linkData } = dbClient.storage.from('reports').getPublicUrl(filePath);
+                        await dbClient.from('students').update({ pdf_link: linkData.publicUrl }).eq('id13', st.id13).eq('year', yr);
                         st.pdfLink = linkData.publicUrl; successCount++;
                     }
                 } catch(e) {}
@@ -1500,7 +1513,7 @@ try {
     // PUBLIC VIEW SEARCH (SUPABASE)
     // ==========================================
     window.searchStudentResult = async function() { 
-        if (!supabase) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        if (!dbClient) return window.customAlert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
         const id13 = document.getElementById('searchId13').value.trim(); 
         const searchYear = document.getElementById('searchYear').value;
         const searchTerm = document.getElementById('searchTerm').value;
@@ -1509,16 +1522,16 @@ try {
         window.showLoader('กำลังตรวจสอบข้อมูลในฐานข้อมูล...'); 
         
         try {
-            const { data: set } = await supabase.from('settings').select('*');
+            const { data: set } = await dbClient.from('settings').select('*');
             if(set) { db.settings = {}; set.forEach(r => db.settings[r.key] = r.value); window.updateDynamicSystemNames(); }
             
-            const { data: student, error } = await supabase.from('students').select('*').eq('id13', id13).eq('year', searchYear).single();
+            const { data: student, error } = await dbClient.from('students').select('*').eq('id13', id13).eq('year', searchYear).single();
             if (error || !student) { window.hideLoader(); return window.customAlert(`ไม่พบข้อมูลนักเรียนรหัสนี้ (ปีการศึกษา ${searchYear})`, 'error'); }
 
             const [subRes, scRes, evRes] = await Promise.all([
-                supabase.from('subjects').select('*').eq('level', student.class_room),
-                supabase.from('scores').select('*').eq('id13', id13).eq('year', searchYear).eq('term', searchTerm),
-                supabase.from('evaluations').select('*').eq('id13', id13).eq('year', searchYear).eq('term', searchTerm).single()
+                dbClient.from('subjects').select('*').eq('level', student.class_room),
+                dbClient.from('scores').select('*').eq('id13', id13).eq('year', searchYear).eq('term', searchTerm),
+                dbClient.from('evaluations').select('*').eq('id13', id13).eq('year', searchYear).eq('term', searchTerm).single()
             ]);
 
             db.students = [{ id13: student.id13, number: student.number, name: student.name, classRoom: student.class_room, pdfLink: student.pdf_link, year: student.year }];
@@ -1563,9 +1576,9 @@ try {
             searchYearEl.innerHTML = optionsHtml;
         }
         
-        if (supabase) {
+        if (dbClient) {
             try {
-                const { data } = await supabase.from('settings').select('*');
+                const { data } = await dbClient.from('settings').select('*');
                 if(data) {
                     data.forEach(r => { db.settings[r.key] = r.value; });
                     window.updateDynamicSystemNames();
