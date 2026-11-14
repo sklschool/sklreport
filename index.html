@@ -374,7 +374,32 @@
         <p class="text-transparent bg-clip-text bg-grad-theme font-bold text-xl tracking-wide" id="loaderText">กำลังประมวลผล...</p>
     </div>
 
+
+
+
+
+
+
 <script>
+// ==========================================
+// 🟢 การตั้งค่า Supabase
+// ==========================================
+const SUPABASE_URL = 'https://ubmqhmuhfujwrezcspez.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'ใส่_Anon_Key_ของ_Supabase_ตรงนี้';
+
+let supabase;
+try {
+    supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (error) {
+    console.warn("ยังไม่ได้ตั้งค่า Supabase URL หรือ Key ไม่ถูกต้อง ปุ่มสลับหน้าจอจะยังกดได้ แต่จะไม่สามารถดึงข้อมูลได้");
+}
+
+
+
+
+
+
+
     // ==========================================
     // 🟢 การตั้งค่า Supabase
     // ==========================================
