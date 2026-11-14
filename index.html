@@ -377,15 +377,18 @@
     // ==========================================
     // 🟢 การตั้งค่า Supabase
     // ==========================================
-    const SUPABASE_URL = 'https://ubmqhmuhfujwrezcspez.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVibXFobXVoZnVqd3JlemNzcGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2MzQ3MDcsImV4cCI6MjExMDIxMDcwN30.GlhIiZFTwrwUTloPIgk3xf50eVzCJAEgWn5ot94xgPE';
-    
-    let supabase;
-    try {
-        supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (error) {
-        console.warn("Supabase Init Error:", error);
-    }
+    // ==========================================
+// 🟢 การตั้งค่า Supabase
+// ==========================================
+const SUPABASE_URL = 'https://ubmqhmuhfujwrezcspez.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVibXFobXVoZnVqd3JlemNzcGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2MzQ3MDcsImV4cCI6MjExMDIxMDcwN30.GlhIiZFTwrwUTloPIgk3xf50eVzCJAEgWn5ot94xgPE';
+
+try {
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (error) {
+    console.warn("Supabase Init Error:", error);
+}
+
 
     // ==========================================
     // UI Core Functions (Supabase Version)
