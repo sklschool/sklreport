@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">ระบบรายงานผลการเรียนออนไลน์ 2/2569</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- html2pdf.js สำหรับสร้าง PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SheetJS สำหรับสร้างไฟล์ Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        tailwind.config = { 
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] }, 
+                    colors: { 
+                        primary: '#0097a7',
+                        secondary: '#00BCD4',
+                        accent: '#80DEEA',
+                        themebg: '#E0F7FA'
+                    },
+                    animation: {
+                        blob: "blob 7s infinite",
+                        fadeIn: "fadeIn 0.3s ease-in-out",
+                        slideUp: "slideUp 0.4s ease-out"
+                    },
+                    keyframes: {
+                        blob: {
+                            "0%": { transform: "translate(0px, 0px) scale(1)" },
+                            "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                            "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                            "100%": { transform: "translate(0px, 0px) scale(1)" }
+                        },
+                        fadeIn: {
+                            "0%": { opacity: "0", transform: "translateY(5px)" },
+                            "100%": { opacity: "1", transform: "translateY(0)" }
+                        },
+                        slideUp: {
+                            "0%": { opacity: "0", transform: "translateY(20px)" },
+                            "100%": { opacity: "1", transform: "translateY(0)" }
+                        }
+                    }
+                } 
+            } 
+        }
+    </script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+        .bg-grad-theme { background: linear-gradient(110deg, #0097a7, #005662); }
+        .text-grad-theme { background: linear-gradient(110deg, #0097a7, #005662); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; } 
+        ::-webkit-scrollbar-track { background: transparent; } 
+        ::-webkit-scrollbar-thumb { background-color: #80DEEA; border-radius: 20px; } 
+        .sidebar-scroll::-webkit-scrollbar-thumb { background-color: #334155; }
+        .loader { border: 4px solid #E0F7FA; border-top: 4px solid #0097a7; border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; } 
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+        
+        /* การตั้งค่าหน้ากระดาษ */
+        .pdf-portrait { width: 210mm; min-height: 297mm; padding: 12mm 15mm; margin: 0 auto; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); box-sizing: border-box; }
+        .pdf-landscape { width: 297mm; min-height: 210mm; padding: 12mm 15mm; margin: 0 auto; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); box-sizing: border-box; }
+        .print-hide { display: block; } @media print { .print-hide { display: none !important; } }
+        .prevent-wrap { white-space: nowrap; } 
+        .score-input { width: 100%; text-align: center; border: 1px solid #e2e8f0; padding: 6px; border-radius: 6px; outline: none; transition: all 0.2s; } 
+        .score-input:focus { border-color: #0097a7; box-shadow: 0 0 0 2px rgba(0, 151, 167, 0.2); background: #f0fdfa; } 
+        .excel-table select { width: 100%; text-align: center; border: 1px solid #e2e8f0; padding: 6px; border-radius: 6px; outline: none; transition: all 0.2s; background-color: white; } 
+        .excel-table select:focus { border-color: #0097a7; box-shadow: 0 0 0 2px rgba(0, 151, 167, 0.2); background: #f0fdfa; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800 bg-slate-50">
+
+    <!-- NAVBAR -->
+    <nav class="bg-grad-theme text-white shadow-lg z-20 flex-shrink-0 relative overflow-hidden">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex justify-between h-20">
+                <div class="flex items-center">
+                    <button id="mobileMenuBtn" class="hidden sm:hidden mr-4 text-white text-2xl focus:outline-none transition transform hover:scale-110" onclick="window.toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm mr-4 border border-white/30 hidden sm:flex">
+                        <i class="fas fa-graduation-cap text-2xl text-white"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-base sm:text-xl tracking-wide block leading-tight" id="navSystemName">ระบบบริหารงานวิชาการออนไลน์</span>
+                        <span class="text-[10px] sm:text-xs text-accent font-medium tracking-wider uppercase" id="navSysTerm">กำลังเชื่อมต่อข้อมูล...</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div id="navUserArea" class="hidden flex items-center space-x-4">
+                        <div class="hidden sm:flex flex-col text-right">
+                            <span id="navUserName" class="text-sm font-bold text-white leading-tight"></span>
+                            <span id="navUserRoleTop" class="text-xs text-primary bg-white px-2 py-0.5 rounded-full mt-1 font-bold"></span>
+                        </div>
+                        <button onclick="window.logout()" class="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 transition-all text-sm font-semibold shadow-md text-white border border-rose-400" title="ออกจากระบบ">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 overflow-hidden relative min-h-0">
+        
+        <!-- Container ซ่อนไว้สำหรับ Render PDF พื้นหลัง -->
+        <div id="hiddenPdfContainer" style="position: absolute; left: -9999px; top: 0; z-index: -100;"></div>
+
+        <!-- PUBLIC VIEW (ดีไซน์ Split Screen: ฝั่งซ้ายคู่มือ ฝั่งขวาล็อกอิน) -->
+        <div id="publicView" class="absolute inset-0 overflow-y-auto bg-slate-50">
+            <div id="splitScreenWrapper" class="flex flex-col lg:flex-row min-h-full w-full">
+                
+                <!-- ฝั่งซ้าย (โลโก้โรงเรียน) -->
+                <!-- เพิ่ม pb-20 เพื่อเผื่อพื้นที่ให้ส่วนสีขาวดึงขึ้นมาทับบนมือถือ -->
+                <div class="w-full lg:w-5/12 xl:w-1/2 bg-gradient-to-br from-[#0097a7] to-[#005662] p-8 md:p-12 xl:p-16 pb-20 lg:pb-16 flex flex-col justify-center relative overflow-hidden text-white min-h-[35vh] lg:min-h-full shadow-2xl z-10">
+                    <!-- ของตกแต่งพื้นหลัง -->
+                    <div class="absolute top-[-10%] left-[-10%] w-64 h-64 bg-white opacity-10 rounded-full blur-3xl animate-blob"></div>
+                    <div class="absolute bottom-[-10%] right-[-10%] w-80 h-80 bg-[#00E5FF] opacity-20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+                    
+                    <div class="relative z-10 max-w-lg mx-auto lg:mx-0 w-full animate-slideUp">
+                        <!-- โลโก้และชื่อระบบ -->
+                        <div class="flex items-center gap-5 mb-4 lg:mb-8 lg:border-b lg:border-white/20 pb-4 lg:pb-8">
+                            <div class="bg-white p-2.5 rounded-2xl shadow-xl shrink-0">
+                                <img id="publicLogo" src="https://i.postimg.cc/xcgmM5DP/image.png" crossorigin="anonymous" onerror="this.style.display='none'" alt="School Logo" class="w-16 h-16 md:w-20 md:h-20 object-contain rounded-xl">
+                            </div>
+                            <div>
+                                <h1 class="text-xl md:text-2xl font-bold leading-tight mb-1">ระบบบริหารงานวิชาการ</h1>
+                                <h2 class="text-sm md:text-base text-cyan-100 font-medium">โรงเรียนบ้านซับก้านเหลือง</h2>
+                                <p class="text-xs text-cyan-200 mt-0.5">สพป.นครราชสีมา เขต 3</p>
+                            </div>
+                        </div>
+                        
+                        <!-- คู่มือการใช้งานระบบ (แสดงบนคอมพิวเตอร์เท่านั้น) -->
+                        <div class="hidden lg:block bg-black/15 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+                            <h3 class="text-lg md:text-xl font-bold mb-6 flex items-center"><i class="fas fa-book-open mr-3 text-cyan-300"></i> คู่มือการใช้งานระบบเบื้องต้น</h3>
+                            <ul class="space-y-5">
+                                <li class="flex items-start gap-4">
+                                    <div class="w-8 h-8 rounded-full bg-white text-[#0097a7] flex items-center justify-center font-bold shrink-0 mt-0.5 shadow-md text-sm">1</div>
+                                    <div>
+                                        <h4 class="font-bold text-[15px]">เลือกโหมดผู้ใช้งาน</h4>
+                                        <p class="text-[13px] text-cyan-50 mt-1 leading-relaxed">กดปุ่มสลับเลือกระหว่างโหมด <span class="font-bold text-white">"นักเรียน"</span> หรือ <span class="font-bold text-white">"ครู/ผู้ดูแล"</span></p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-4">
+                                    <div class="w-8 h-8 rounded-full bg-white text-[#0097a7] flex items-center justify-center font-bold shrink-0 mt-0.5 shadow-md text-sm">2</div>
+                                    <div>
+                                        <h4 class="font-bold text-[15px]">กรอกข้อมูลเข้าสู่ระบบ</h4>
+                                        <p class="text-[13px] text-cyan-50 mt-1 leading-relaxed"><b>• นักเรียน:</b> ใช้เลขประจำตัวประชาชน 13 หลัก<br><b>• ครู:</b> ใช้ Username และ Password ที่ได้รับจากระบบ</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-4">
+                                    <div class="w-8 h-8 rounded-full bg-white text-[#0097a7] flex items-center justify-center font-bold shrink-0 mt-0.5 shadow-md text-sm">3</div>
+                                    <div>
+                                        <h4 class="font-bold text-[15px]">ตรวจสอบและดาวน์โหลดเอกสาร</h4>
+                                        <p class="text-[13px] text-cyan-50 mt-1 leading-relaxed">เลือกปีการศึกษาและภาคเรียน กดปุ่มค้นหาเพื่อดูผลการเรียนและบันทึกสมุดพก (ปพ.6) เป็นไฟล์ PDF ทันที</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ฝั่งขวา (ฟอร์มและคู่มือบนมือถือ) -->
+                <!-- ปรับ -mt-10 และ rounded-t-[2.5rem] เพื่อให้ซ้อนทับกรอบสีเขียวบนมือถือ -->
+                <div class="w-full lg:w-7/12 xl:w-1/2 bg-[#F8FAFC] flex flex-col items-center justify-start lg:justify-center p-6 md:p-12 relative min-h-[65vh] lg:min-h-full z-20 -mt-10 rounded-t-[2.5rem] lg:mt-0 lg:rounded-none shadow-[0_-15px_40px_rgba(0,0,0,0.1)] lg:shadow-none">
+                    
+                    <!-- Login/Search Card -->
+                    <div id="formBox" class="w-full max-w-[460px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden relative z-10 animate-fadeIn mt-2 lg:mt-0">
+                        <div class="p-8 sm:p-10">
+                            <div class="mb-8 text-center sm:text-left">
+                                <h3 class="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight">ยินดีต้อนรับ 👋</h3>
+                                <p id="subWelcomeText" class="text-[14px] font-medium text-slate-500 mt-2">กรุณาเลือกโหมดและกรอกข้อมูลเพื่อเข้าใช้งาน</p>
+                            </div>
+                            
+                            <!-- Toggle Switch -->
+                            <div class="bg-slate-100 p-1.5 rounded-xl flex mb-6 w-full shadow-inner border border-slate-200/80">
+                                <button type="button" id="btnModeTeacher" class="flex-1 py-2.5 sm:py-3 text-[13px] sm:text-[14px] font-bold text-slate-500 rounded-lg hover:text-slate-700 hover:bg-slate-200/60 transition-colors focus:outline-none" onclick="window.switchLoginMode('teacher')">ครู / ผู้ดูแล</button>
+                                <button type="button" id="btnModeStudent" class="flex-1 py-2.5 sm:py-3 text-[13px] sm:text-[14px] font-bold bg-white text-[#0097a7] rounded-lg shadow-sm border border-slate-200/50 focus:outline-none" onclick="window.switchLoginMode('student')">นักเรียน</button>
+                            </div>
+
+                            <!-- ฟอร์มค้นหาสำหรับนักเรียน (ค่าเริ่มต้น) -->
+                            <div id="studentFormMode" class="space-y-4 sm:space-y-5 w-full animate-fadeIn">
+                                <div>
+                                    <label class="block text-slate-700 text-xs font-bold mb-1.5 ml-1">รหัสประจำตัวประชาชน 13 หลัก</label>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                                            <i class="fas fa-id-card text-[14px]"></i>
+                                        </div>
+                                        <input type="text" id="searchId13" maxlength="13" class="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-mono tracking-widest text-[14px] text-slate-800 outline-none placeholder:text-slate-400 placeholder:tracking-normal placeholder:font-sans bg-slate-50 focus:bg-white shadow-sm" placeholder="เลข 13 หลัก" onkeypress="if(event.key === 'Enter') window.searchStudentResult()">
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                                    <div>
+                                        <label class="block text-slate-700 text-xs font-bold mb-1.5 ml-1">ปีการศึกษา</label>
+                                        <div class="relative group">
+                                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                                                <i class="fas fa-calendar-alt text-[14px]"></i>
+                                            </div>
+                                            <select id="searchYear" class="w-full pl-10 pr-7 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-700 outline-none appearance-none cursor-pointer bg-slate-50 focus:bg-white text-[14px] shadow-sm">
+                                                <!-- จะถูกสร้างโดย JavaScript -->
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                                <i class="fas fa-chevron-down text-[10px]"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-slate-700 text-xs font-bold mb-1.5 ml-1">ภาคเรียน</label>
+                                        <div class="relative group">
+                                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                                                <i class="fas fa-layer-group text-[14px]"></i>
+                                            </div>
+                                            <select id="searchTerm" class="w-full pl-10 pr-7 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-700 outline-none appearance-none cursor-pointer bg-slate-50 focus:bg-white text-[14px] shadow-sm">
+                                                <option value="1">1</option>
+                                                <option value="2" selected>2</option>
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                                <i class="fas fa-chevron-down text-[10px]"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 sm:pt-4">
+                                    <button type="button" onclick="window.searchStudentResult()" class="w-full bg-grad-theme hover:opacity-90 text-white font-bold py-3.5 sm:py-4 px-6 rounded-xl shadow-lg shadow-[#0097a7]/30 transform transition-all active:scale-[0.98] flex justify-center items-center text-[15px]">
+                                        <i class="fas fa-search mr-2"></i> ตรวจสอบผลการเรียน
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- ฟอร์มเข้าสู่ระบบสำหรับครู/ผู้ดูแล (ซ่อนไว้เป็นค่าเริ่มต้น) -->
+                            <div id="teacherFormMode" class="hidden space-y-4 sm:space-y-5 w-full animate-fadeIn">
+                                <div>
+                                    <label class="block text-slate-700 text-xs font-bold mb-1.5 ml-1">Username (ชื่อผู้ใช้)</label>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                                            <i class="fas fa-user-tie text-[14px]"></i>
+                                        </div>
+                                        <input type="text" id="username" class="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-[14px] text-slate-800 outline-none placeholder:text-slate-400 bg-slate-50 focus:bg-white shadow-sm" placeholder="กรอกชื่อผู้ใช้" onkeypress="if(event.key === 'Enter') document.getElementById('password').focus()">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-slate-700 text-xs font-bold mb-1.5 ml-1">Password (รหัสผ่าน)</label>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                                            <i class="fas fa-lock text-[14px]"></i>
+                                        </div>
+                                        <input type="password" id="password" class="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-[14px] text-slate-800 outline-none placeholder:text-slate-400 bg-slate-50 focus:bg-white shadow-sm" placeholder="กรอกรหัสผ่าน" onkeypress="if(event.key === 'Enter') window.login()">
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-2 sm:pt-4">
+                                    <button type="button" onclick="window.login()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 sm:py-4 px-6 rounded-xl shadow-lg shadow-slate-900/20 transform transition-all active:scale-[0.98] flex justify-center items-center text-[15px]">
+                                        <i class="fas fa-sign-in-alt mr-2"></i> เข้าสู่ระบบจัดการ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- คู่มือสำหรับมือถือ (แสดงเฉพาะหน้าจอเล็ก) ย้ายมาอยู่ด้านล่างสุด -->
+                    <div class="block lg:hidden w-full max-w-[460px] mt-8 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 mb-8">
+                        <h3 class="text-lg font-bold mb-5 flex items-center text-[#0097a7]">
+                            <i class="fas fa-book-open mr-2"></i> คู่มือการใช้งานเบื้องต้น
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">1</div>
+                                <div>
+                                    <h4 class="font-bold text-[14px] text-slate-800">เลือกโหมดผู้ใช้งาน</h4>
+                                    <p class="text-[12px] text-slate-500 mt-0.5">นักเรียน หรือ ครู/ผู้ดูแล</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">2</div>
+                                <div>
+                                    <h4 class="font-bold text-[14px] text-slate-800">กรอกข้อมูล</h4>
+                                    <p class="text-[12px] text-slate-500 mt-0.5">นักเรียนใช้เลข ปชช. 13 หลัก, ครูใช้ Username</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">3</div>
+                                <div>
+                                    <h4 class="font-bold text-[14px] text-slate-800">ตรวจสอบและดาวน์โหลด</h4>
+                                    <p class="text-[12px] text-slate-500 mt-0.5">กดค้นหาเพื่อดูและบันทึก ปพ.6 เป็น PDF</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- RESULT CONTAINER (ซ่อนไว้จนกว่าจะค้นหา จะแสดงต่อท้ายหน้าจอ) -->
+            <div id="publicResultContainer" class="w-full max-w-5xl hidden flex-col items-center z-20 relative px-4 pb-20 mx-auto mt-12 animate-slideUp">
+                <div class="w-full flex flex-col sm:flex-row justify-between items-center bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200 mb-6 gap-4">
+                    <div class="flex items-center text-slate-800 font-bold text-lg sm:text-xl pl-2">
+                        <i class="fas fa-file-alt text-primary mr-3 text-xl sm:text-2xl"></i> ผลการเรียนของนักเรียน
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button type="button" onclick="window.exportPublicPDF()" class="flex-1 sm:flex-none bg-primary hover:bg-[#00838f] text-white py-2 sm:py-2.5 px-5 sm:px-6 rounded-xl shadow-sm font-bold transition flex items-center justify-center text-sm">
+                            <i class="fas fa-download mr-2"></i> บันทึก PDF
+                        </button>
+                        <button type="button" onclick="window.resetPublicView()" class="flex-1 sm:flex-none bg-slate-100 hover:bg-slate-200 text-slate-600 py-2 sm:py-2.5 px-5 sm:px-6 rounded-xl font-bold transition flex items-center justify-center border border-slate-200 text-sm">
+                            <i class="fas fa-times mr-2"></i> ปิด
+                        </button>
+                    </div>
+                </div>
+                <!-- ส่วนแสดงผล PDF จำลองบนหน้าเว็บ -->
+                <div id="pdfRenderArea" class="w-full overflow-x-auto shadow-2xl rounded-2xl bg-white border border-slate-200"></div>
+            </div>
+
+        </div> <!-- End publicView -->
+
+        <!-- CUSTOM POPUP ALERTS -->
+        <div id="customPopup" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex justify-center items-center backdrop-blur-sm transition-opacity px-4">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm relative transform transition-all duration-300 scale-95 opacity-0" id="customPopupBox">
+                <div id="popupIcon" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-inner"></div>
+                <h3 id="popupTitle" class="text-xl sm:text-2xl font-bold text-center text-slate-800 mb-2">แจ้งเตือน</h3>
+                <p id="popupMessage" class="text-center text-slate-600 mb-8 text-sm sm:text-base leading-relaxed"></p>
+                <div id="popupButtons" class="flex flex-col sm:flex-row justify-center gap-3"></div>
+            </div>
+        </div>
+
+        <!-- SYSTEM VIEW (ADMIN/TEACHER DASHBOARD) -->
+        <div id="systemView" class="hidden h-full flex w-full relative">
+            <div id="mobileOverlay" class="hidden fixed inset-0 bg-slate-900/60 z-30 backdrop-blur-sm sm:hidden transition-opacity" onclick="window.toggleSidebar()"></div>
+            
+            <div id="sidebarContainer" class="w-72 bg-[#0f172a] text-slate-300 h-full flex flex-col shadow-2xl z-40 flex-shrink-0 absolute sm:relative transform -translate-x-full sm:translate-x-0 transition-transform duration-300 ease-in-out">
+                <div class="p-6 border-b border-slate-800 bg-[#1e293b]/50 flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-grad-theme flex items-center justify-center text-white text-xl font-bold shadow-lg"><i class="fas fa-user-circle"></i></div>
+                    <div class="overflow-hidden">
+                        <div class="text-white font-bold text-base truncate" id="sideUserName">Name</div>
+                        <div class="text-[10px] text-accent font-bold mt-1 uppercase tracking-wider bg-[#0097a7]/20 inline-block px-2 py-0.5 rounded-full border border-[#0097a7]/50" id="sideUserRole">Role</div>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto py-4 sidebar-scroll px-3" id="sidebarMenu"></div>
+            </div>
+            
+            <div class="flex-1 bg-white overflow-y-auto p-4 sm:p-10 relative w-full overflow-x-hidden">
+                <div id="contentArea" class="max-w-7xl mx-auto space-y-6 pb-20"></div>
+            </div>
+        </div>
+        
+        <!-- ADMIN PP6 MODAL -->
+        <div id="pp6Modal" class="hidden fixed inset-0 bg-slate-900/80 z-[80] flex justify-center items-start overflow-y-auto pt-10 pb-10 backdrop-blur-sm">
+            <div class="relative flex flex-col items-center max-w-4xl w-full mx-4">
+                <div class="flex justify-between w-full mb-4 px-4">
+                    <button onclick="window.printAdminPP6()" class="bg-secondary hover:bg-[#00b3e6] text-white px-6 py-2 rounded-xl font-bold shadow-lg mr-2"><i class="fas fa-print mr-2"></i> พิมพ์</button>
+                    <button onclick="window.downloadAdminPP6()" class="bg-primary hover:bg-[#005cbf] text-white px-6 py-2 rounded-xl font-bold shadow-lg"><i class="fas fa-download mr-2"></i> โหลด PDF</button>
+                    <button onclick="document.getElementById('pp6Modal').classList.add('hidden')" class="bg-slate-700 hover:bg-rose-500 text-white px-6 py-2 rounded-xl font-bold shadow-lg transition-colors ml-auto"><i class="fas fa-times mr-2"></i> ปิดหน้าต่าง</button>
+                </div>
+                <div id="pp6ModalContent" class="shadow-2xl rounded-lg overflow-hidden w-[210mm] flex-shrink-0 bg-white"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Loader -->
+    <div id="globalLoader" class="hidden absolute inset-0 bg-white/80 z-[90] flex flex-col justify-center items-center backdrop-blur-sm">
+        <div class="loader mb-5 shadow-lg"></div>
+        <p class="text-transparent bg-clip-text bg-grad-theme font-bold text-xl tracking-wide" id="loaderText">กำลังประมวลผล...</p>
+    </div>
+
+<script>
+    // ==========================================
+    // 🟢 การตั้งค่า Supabase
+    // ==========================================
+    const SUPABASE_URL = 'https://ubmqhmuhfujwrezcspez.supabase.co/rest/'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVibXFobXVoZnVqd3JlemNzcGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2MzQ3MDcsImV4cCI6MjExMDIxMDcwN30.GlhIiZFTwrwUTloPIgk3xf50eVzCJAEgWn5ot94xgPE';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ==========================================
+    // UI Core Functions (Supabase Version)
+    // ==========================================
+    let db = { users: [], assignments: [], students: [], subjects: [], scores: {}, evaluations: {}, settings: {} };
+    let currentUser = null;
+    let currentPrintId13 = null;
+    let editingUserId = null; 
+
+    window.switchLoginMode = function(mode) {
+        try {
+            const btnTeacher = document.getElementById('btnModeTeacher');
+            const btnStudent = document.getElementById('btnModeStudent');
+            const formTeacher = document.getElementById('teacherFormMode');
+            const formStudent = document.getElementById('studentFormMode');
+            const subTitle = document.getElementById('subWelcomeText');
+            
+            if (mode === 'teacher') {
+                if(btnTeacher) btnTeacher.className = "flex-1 py-2.5 sm:py-3 text-[13px] sm:text-[14px] font-bold bg-white text-[#0097a7] rounded-lg shadow-sm border border-slate-200/50 focus:outline-none";
+                if(btnStudent) btnStudent.className = "flex-1 py-2.5 sm:py-3 text-[13px] sm:text-[14px] font-bold text-slate-500 rounded-lg hover:text-slate-700 hover:bg-slate-200/60 transition-colors focus:outline-none";
+                if(subTitle) subTitle.innerText = "เข้าสู่ระบบจัดการข้อมูลสำหรับครูผู้สอน";
+                
+                if(formTeacher) { formTeacher.classList.remove('hidden'); formTeacher.style.display = 'block'; }
+                if(formStudent) { formStudent.classList.add('hidden'); formStudent.style.display = 'none'; }
+            } else {
+                if(btnStudent) btnStudent.className = "flex-1 py-2.5 sm:py-3 text-[13px] sm:text-[14px] font-bold bg-white text-[#0097a7] rounded-lg shadow-sm border border-slate-200/50 focus:outline-none";
+                if(btnTeacher) btnTeacher.className = "flex-1 py-2.5 sm:py-3 text-[13px] sm:text-[14px] font-bold text-slate-500 rounded-lg hover:text-slate-700 hover:bg-slate-200/60 transition-colors focus:outline-none";
+                if(subTitle) subTitle.innerText = "ตรวจสอบผลการเรียนและดาวน์โหลด ปพ.6";
+                
+                if(formStudent) { formStudent.classList.remove('hidden'); formStudent.style.display = 'block'; }
+                if(formTeacher) { formTeacher.classList.add('hidden'); formTeacher.style.display = 'none'; }
+            }
+        } catch (e) {
+            console.error("Mode switch error: ", e);
+        }
+    };
+
+    window.toggleSidebar = function() {
+        const sidebar = document.getElementById('sidebarContainer');
+        const overlay = document.getElementById('mobileOverlay');
+        if(sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden');
+        }
+    };
+
+    window.closeSidebarMobile = function() {
+        if(window.innerWidth < 640 && !document.getElementById('sidebarContainer').classList.contains('-translate-x-full')) window.toggleSidebar();
+    };
+
+    window.createSignatureHTML = function(title, name, sigUrl, isPrincipal = false) {
+        let imgSize = isPrincipal ? 'h-20' : 'h-14'; 
+        let imgTag = sigUrl ? `<img src="${sigUrl}" crossorigin="anonymous" onerror="this.style.display='none'" class="${imgSize} absolute bottom-1 z-10 object-contain drop-shadow-sm" style="max-width: 100%;">` : '';
+        return `
+        <div class="text-center text-sm flex flex-col items-center mx-4">
+            <div class="relative w-48 h-16 flex items-end justify-center mb-1">
+                <p class="w-full text-center z-0 absolute bottom-0 text-slate-800">ลงชื่อ ......................................................</p>
+                ${imgTag}
+            </div>
+            <p>( ${name || '......................................................'} )</p>
+            <p class="text-gray-700 font-semibold mt-1">${title}</p>
+        </div>`;
+    };
+
+    window.showLoader = function(text = "กำลังประมวลผล...") { document.getElementById('loaderText').innerText = text; document.getElementById('globalLoader').classList.remove('hidden'); };
+    window.hideLoader = function() { document.getElementById('globalLoader').classList.add('hidden'); };
+    
+    window.isPrimaryClass = function(className) {
+        if(!className) return false;
+        return className.includes('ป.') || className.includes('ประถม');
+    };
+
+    window.calculateStudentGrade = function(classRoom, accum, final) {
+        let aStr = String(accum).trim(); let fStr = String(final).trim();
+        let isPrimary = window.isPrimaryClass(classRoom);
+        
+        if (aStr === "ร" || fStr === "ร") return { total: "ร", grade: "ร", percent: "ร" };
+        if (aStr === "" && fStr === "") return { total: "", grade: "", percent: "" };
+        
+        let a = parseFloat(accum) || 0; let f = parseFloat(final) || 0; 
+        let score = 0;
+        
+        if (isPrimary) {
+            if (aStr === "" || fStr === "") return { total: "-", grade: "-", percent: "-" };
+            score = (a + f) / 2;
+        } else {
+            score = a + f;
+        }
+
+        let grade = "0"; 
+        if (score >= 80) grade = "4.0"; else if (score >= 75) grade = "3.5"; else if (score >= 70) grade = "3.0"; 
+        else if (score >= 65) grade = "2.5"; else if (score >= 60) grade = "2.0"; else if (score >= 55) grade = "1.5"; 
+        else if (score >= 50) grade = "1.0"; 
+        
+        return { 
+            total: isPrimary ? score.toFixed(1) : score.toString(), 
+            grade: grade,
+            percent: score.toFixed(1)
+        }; 
+    };
+    
+    window.getSubjectType = function(code) { 
+        if(!code) return 'พื้นฐาน';
+        const nums = code.replace(/\D/g, ''); 
+        return (nums.length >= 3 && nums[2] === '2') ? 'เพิ่มเติม' : 'พื้นฐาน'; 
+    };
+
+    window.customAlert = function(msg, type = 'info') { window.openPopup(msg, type, false); };
+    window.customConfirm = function(msg, confirmCallback) { window.openPopup(msg, 'warning', true, confirmCallback); };
+
+    window.openPopup = function(msg, type, isConfirm, confirmCallback = null) {
+        const popup = document.getElementById('customPopup');
+        const box = document.getElementById('customPopupBox');
+        const icon = document.getElementById('popupIcon');
+        const title = document.getElementById('popupTitle');
+        const message = document.getElementById('popupMessage');
+        const btnContainer = document.getElementById('popupButtons');
+
+        message.innerText = msg;
+        btnContainer.innerHTML = '';
+
+        if(type === 'success') {
+            icon.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-secondary bg-secondary/10 shadow-inner';
+            icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            title.innerText = 'สำเร็จ!';
+        } else if(type === 'error') {
+            icon.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-rose-500 bg-rose-50 shadow-inner';
+            icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+            title.innerText = 'ข้อผิดพลาด';
+        } else if(type === 'warning') {
+            icon.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-amber-500 bg-amber-50 shadow-inner';
+            icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            title.innerText = 'โปรดยืนยัน';
+        } else {
+            icon.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-primary bg-primary/10 shadow-inner';
+            icon.innerHTML = '<i class="fas fa-info-circle"></i>';
+            title.innerText = 'แจ้งเตือน';
+        }
+
+        if(isConfirm) {
+            btnContainer.innerHTML = `
+                <button onclick="window.closePopup()" class="px-6 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-colors w-full">ยกเลิก</button>
+                <button id="popupConfirmBtn" class="px-6 py-2.5 bg-grad-theme hover:opacity-90 text-white rounded-xl font-bold shadow-md transition-all transform hover:-translate-y-0.5 w-full">ยืนยัน</button>
+            `;
+            document.getElementById('popupConfirmBtn').onclick = () => { window.closePopup(); if(confirmCallback) confirmCallback(); };
+        } else {
+            btnContainer.innerHTML = `<button onclick="window.closePopup()" class="px-8 py-3 bg-grad-theme hover:opacity-90 text-white rounded-xl font-bold shadow-md transition-all transform hover:-translate-y-0.5 w-full">ตกลง</button>`;
+        }
+
+        popup.classList.remove('hidden');
+        setTimeout(() => { box.classList.remove('scale-95', 'opacity-0'); box.classList.add('scale-100', 'opacity-100'); }, 10);
+    };
+
+    window.closePopup = function() {
+        const popup = document.getElementById('customPopup');
+        const box = document.getElementById('customPopupBox');
+        box.classList.remove('scale-100', 'opacity-100'); box.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => popup.classList.add('hidden'), 200);
+    };
+
+    window.showPublicView = function() { 
+        document.getElementById('systemView').classList.add('hidden'); 
+        document.getElementById('publicView').classList.remove('hidden'); 
+        document.getElementById('navUserArea').classList.add('hidden'); 
+        window.buildPublicYearDropdown();
+        window.switchLoginMode('student');
+    };
+
+    // ==========================================
+    // DATABASE FETCHING (SUPABASE)
+    // ==========================================
+    window.fetchDatabase = async function() {
+        try {
+            const [u, a, s, sub, sc, ev, set] = await Promise.all([
+                supabase.from('users').select('*'),
+                supabase.from('assignments').select('*'),
+                supabase.from('students').select('*'),
+                supabase.from('subjects').select('*'),
+                supabase.from('scores').select('*'),
+                supabase.from('evaluations').select('*'),
+                supabase.from('settings').select('*')
+            ]);
+
+            db.users = u.data.map(r => ({id: r.id, username: r.username, password: r.password, role: r.role, name: r.name, signatureUrl: r.signature_url || ''}));
+            db.assignments = a.data.map(r => ({userId: r.user_id, classRoom: r.class_room}));
+            db.students = s.data.map(r => ({id13: r.id13, number: r.number, name: r.name, classRoom: r.class_room, pdfLink: r.pdf_link || '', year: r.year}));
+            db.subjects = sub.data.map(r => ({code: r.code, name: r.name, credit: parseFloat(r.credit), level: r.level, teacher: r.teacher_name || ''}));
+            
+            db.scores = {};
+            sc.data.forEach(r => { db.scores[`${r.year}_${r.term}_${r.id13}_${r.subject_code}`] = {accum: r.accum_score || '', final: r.final_score || ''}; });
+            
+            db.evaluations = {};
+            ev.data.forEach(r => { db.evaluations[`${r.year}_${r.term}_${r.id13}`] = {guidance: r.guidance, scout: r.scout, club: r.club, char: r.characteristics, read: r.reading}; });
+            
+            db.settings = {};
+            set.data.forEach(r => { db.settings[r.key] = r.value; });
+
+        } catch (error) {
+            console.error('Fetch DB Error:', error);
+        }
+    };
+
+    // ==========================================
+    // AUTHENTICATION (SUPABASE)
+    // ==========================================
+    window.login = async function() {
+        const user = document.getElementById('username').value.trim(); 
+        const pass = document.getElementById('password').value.trim();
+        if(!user || !pass) return window.customAlert('กรุณากรอก Username และ Password', 'error');
+        
+        window.showLoader('ตรวจสอบสิทธิ์...');
+        
+        const { data, error } = await supabase.from('users').select('*').eq('username', user).eq('password', pass).single();
+        
+        if (error || !data) {
+            window.hideLoader(); window.customAlert('ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง', 'error');
+            return;
+        }
+
+        currentUser = { id: data.id, role: data.role, name: data.name, signatureUrl: data.signature_url };
+        window.showLoader('กำลังดาวน์โหลดข้อมูลล่าสุดจากระบบ...');
+        
+        await window.fetchDatabase();
+        window.updateDynamicSystemNames();
+        window.hideLoader();
+        
+        document.getElementById('publicView').classList.add('hidden'); 
+        document.getElementById('systemView').classList.remove('hidden');
+        document.getElementById('navUserArea').classList.remove('hidden');
+        
+        document.getElementById('navUserName').innerText = currentUser.name; 
+        document.getElementById('navUserRoleTop').innerText = currentUser.role === 'admin' ? 'Administrator' : 'Teacher';
+        document.getElementById('sideUserName').innerText = currentUser.name; 
+        document.getElementById('sideUserRole').innerText = currentUser.role === 'admin' ? 'Admin' : 'Teacher';
+        document.getElementById('mobileMenuBtn').classList.replace('hidden', 'block');
+        
+        window.buildSidebarMenu(); 
+        window.loadMenu('menu_dashboard');
+    };
+    
+    window.logout = function() { 
+        currentUser = null; 
+        window.showPublicView(); 
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('mobileMenuBtn').classList.replace('block', 'hidden'); 
+    };
+
+    window.buildPublicYearDropdown = function() {
+        let yr = parseInt(db.settings?.currentYear || '2569');
+        let html = '';
+        for(let i = yr - 5; i <= yr + 2; i++) {
+            html += `<option value="${i}" ${i === yr ? 'selected' : ''}>${i}</option>`;
+        }
+        let yrDropdown = document.getElementById('searchYear');
+        if(yrDropdown) yrDropdown.innerHTML = html;
+        let semDropdown = document.getElementById('searchTerm');
+        if(semDropdown) semDropdown.value = db.settings?.currentTerm || '2';
+    };
+
+    window.updateDynamicSystemNames = function() {
+        let sysName = db.settings.systemName || 'ระบบบริหารงานวิชาการออนไลน์';
+        let termStr = `ภาคเรียนที่ ${db.settings.currentTerm || '2'} ปีการศึกษา ${db.settings.currentYear || '2569'}`;
+        let shortTermStr = `ภาคเรียนที่ ${db.settings.currentTerm || '2'}/${db.settings.currentYear || '2569'}`;
+        
+        document.getElementById('navSystemName').innerText = sysName;
+        document.getElementById('navSysTerm').innerText = shortTermStr;
+        document.getElementById('pageTitle').innerText = sysName;
+        if(db.settings.logoUrl) {
+            let logoEl = document.getElementById('publicLogo');
+            if (logoEl) logoEl.src = db.settings.logoUrl;
+        }
+        
+        window.buildPublicYearDropdown();
+    };
+
+    window.buildSidebarMenu = function() {
+        const groups = [
+            { category: "หน้าหลัก", roles: ['admin', 'teacher'], items: [ { id: 'menu_dashboard', icon: 'fa-chart-pie', text: 'แดชบอร์ดสรุปผล' } ] },
+            { category: "งานวิชาการ", roles: ['admin', 'teacher'], items: [ 
+                { id: 'menu_students', icon: 'fa-users', text: 'จัดการชั้นเรียน' },
+                { id: 'menu_scores', icon: 'fa-pen-to-square', text: 'กรอกคะแนนวิชา' },
+                { id: 'menu_eval', icon: 'fa-clipboard-check', text: 'ประเมินกิจกรรม' } 
+            ]},
+            { category: "พิมพ์รายงาน", roles: ['admin', 'teacher'], items: [
+                { id: 'menu_report_pp5', icon: 'fa-file-excel', text: 'แบบรายงาน ปพ.5' },
+                { id: 'menu_report_pp5_subj', icon: 'fa-file-invoice', text: 'ปพ.5 (แยกวิชา)' }, 
+                { id: 'menu_report_pp6', icon: 'fa-id-card', text: 'สมุดพก ปพ.6' }
+            ]},
+            { category: "ผู้ดูแลระบบ", roles: ['admin'], items: [ 
+                { id: 'menu_users', icon: 'fa-user-tie', text: 'จัดการผู้ใช้งาน' }, 
+                { id: 'menu_subjects', icon: 'fa-book-open', text: 'จัดการรายวิชา' },
+                { id: 'menu_assign', icon: 'fa-user-cog', text: 'มอบหมายสิทธิ์ดูแลห้อง' },
+                { id: 'menu_settings', icon: 'fa-cogs', text: 'ตั้งค่าระบบ' } 
+            ] }
+        ];
+
+        let html = '';
+        groups.forEach(group => {
+            if(group.roles.includes(currentUser.role)) {
+                html += `<div class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-2">${group.category}</div>`;
+                group.items.forEach(item => { html += `<div id="navItem_${item.id}" onclick="window.loadMenu('${item.id}')" class="menu-item px-4 py-3 mb-1 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-[#1e293b] cursor-pointer transition-all flex items-center group"><div class="w-8 flex justify-center mr-2"><i class="fas ${item.icon} text-lg text-slate-500 group-hover:text-accent transition-colors menu-icon"></i></div>${item.text}</div>`; });
+            }
+        });
+        document.getElementById('sidebarMenu').innerHTML = html;
+    };
+
+    window.loadMenu = function(menuId) {
+        document.querySelectorAll('.menu-item').forEach(el => { el.classList.remove('bg-grad-theme', 'text-white', 'shadow-md'); el.classList.add('text-slate-400'); el.querySelector('.menu-icon').classList.replace('text-white', 'text-slate-500'); });
+        const activeItem = document.getElementById(`navItem_${menuId}`);
+        if(activeItem) { activeItem.classList.remove('text-slate-400', 'hover:bg-[#1e293b]'); activeItem.classList.add('bg-grad-theme', 'text-white', 'shadow-md'); activeItem.querySelector('.menu-icon').classList.replace('text-slate-500', 'text-white'); }
+
+        const content = document.getElementById('contentArea');
+        if(menuId === 'menu_dashboard') window.renderDashboard(content);
+        else if(menuId === 'menu_users') window.renderUserMgmt(content);
+        else if(menuId === 'menu_subjects') window.renderSubjectMgmt(content);
+        else if(menuId === 'menu_assign') window.renderAssignMgmt(content);
+        else if(menuId === 'menu_students') window.renderStudentMgmt(content); 
+        else if(menuId === 'menu_scores') window.renderScoreEntry(content);
+        else if(menuId === 'menu_eval') window.renderEvalEntry(content);
+        else if(menuId === 'menu_report_pp5') window.renderPP5Menu(content);
+        else if(menuId === 'menu_report_pp5_subj') window.renderPP5SubjectMenu(content);
+        else if(menuId === 'menu_report_pp6') window.renderPP6Menu(content);
+        else if(menuId === 'menu_settings') window.renderSettings(content);
+
+        window.closeSidebarMobile();
+    };
+
+    // ==========================================
+    // MODULES FUNCTIONS (SUPABASE ENABLED)
+    // ==========================================
+
+    window.renderDashboard = function(container) {
+        container.innerHTML = `
+            <div class="flex justify-between items-end mb-8"><div><h2 class="text-3xl font-bold text-slate-800 tracking-tight">สวัสดี, ${currentUser.name.split(' ')[0]} 👋</h2><p class="text-slate-500 mt-1">ยินดีต้อนรับสู่ระบบบริหารงานวิชาการออนไลน์</p></div></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-themebg/50 rounded-3xl p-6 shadow-sm border border-secondary/20 flex justify-between items-center"><div><p class="text-sm font-semibold text-slate-500">นักเรียนทั้งหมด</p><h3 class="text-3xl font-bold text-primary">${db.students.length} <span class="text-sm font-normal text-slate-400">คน</span></h3></div><div class="w-12 h-12 rounded-2xl bg-secondary/20 text-secondary flex items-center justify-center text-xl shadow-inner"><i class="fas fa-users"></i></div></div>
+                <div class="bg-themebg/50 rounded-3xl p-6 shadow-sm border border-secondary/20 flex justify-between items-center"><div><p class="text-sm font-semibold text-slate-500">วิชาที่เปิดสอน</p><h3 class="text-3xl font-bold text-primary">${db.subjects.length} <span class="text-sm font-normal text-slate-400">วิชา</span></h3></div><div class="w-12 h-12 rounded-2xl bg-primary/20 text-primary flex items-center justify-center text-xl shadow-inner"><i class="fas fa-book-open"></i></div></div>
+                <div class="bg-grad-theme rounded-3xl p-6 shadow-md text-white"><p class="text-sm font-medium text-accent">ภาคเรียนปัจจุบัน</p><h3 class="text-2xl font-bold mt-1"><i class="fas fa-calendar-alt mr-2"></i> ${db.settings?.currentTerm || '2'}/${db.settings?.currentYear || '2569'}</h3></div>
+            </div>
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 mt-8">
+                <h3 class="text-xl font-bold text-primary mb-6 border-l-4 border-secondary pl-3">การทำงานของระบบ (Supabase Version)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-5 bg-themebg/50 rounded-2xl border border-secondary/20 transition hover:shadow-md">
+                        <h4 class="font-bold text-primary mb-2"><i class="fas fa-database mr-2"></i> บันทึกข้อมูลบน Database ทันที</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">ข้อมูลทั้งหมดในระบบนี้ถูกบันทึกไว้ในฐานข้อมูล Supabase อัตโนมัติ ทำให้ผู้ใช้งานหลายคนสามารถทำงานร่วมกันได้อย่างเรียลไทม์ และโหลดเร็วขึ้น</p>
+                    </div>
+                    <div class="p-5 bg-themebg/50 rounded-2xl border border-secondary/20 transition hover:shadow-md">
+                        <h4 class="font-bold text-secondary mb-2"><i class="fas fa-pen-to-square mr-2"></i> รองรับประถม/มัธยมอัจฉริยะ</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">หากตรวจพบห้องเรียนระดับประถมศึกษา (ป.) ระบบจะปรับช่องคะแนนให้เป็น ภาคเรียนที่ 1 และ ภาคเรียนที่ 2 อัตโนมัติ</p>
+                    </div>
+                </div>
+            </div>
+            `;
+    };
+
+    window.renderSettings = function(container) {
+        let sysName = db.settings?.systemName || 'ระบบบริหารงานวิชาการออนไลน์';
+        let logo = db.settings?.logoUrl || '';
+        let prin = db.settings?.principalName || '';
+        let prinSig = db.settings?.principalSigUrl || '';
+        let cYear = db.settings?.currentYear || '2569';
+        let cTerm = db.settings?.currentTerm || '2';
+        
+        container.innerHTML = `
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 max-w-3xl mx-auto">
+                <h2 class="text-2xl font-bold text-primary mb-6"><i class="fas fa-cogs text-secondary mr-2"></i> ตั้งค่าระบบและรายงานผล</h2>
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8 space-y-6">
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">ปีการศึกษาปัจจุบัน (ตัวหน้า)</label>
+                            <input type="text" id="setCurrentYear" value="${cYear}" class="w-full border border-slate-300 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="2569">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">ภาคเรียนปัจจุบัน</label>
+                            <select id="setCurrentTerm" class="w-full border border-slate-300 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none">
+                                <option value="1" ${cTerm==='1'?'selected':''}>1</option>
+                                <option value="2" ${cTerm==='2'?'selected':''}>2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">ชื่อระบบ (แสดงบนหัวเว็บ)</label>
+                        <input type="text" id="setSystemName" value="${sysName}" class="w-full border border-slate-300 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="เช่น ระบบตรวจสอบผลการเรียน...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">ลิงก์รูปภาพโลโก้โรงเรียน (URL)</label>
+                        <input type="text" id="setLogoUrl" value="${logo}" class="w-full border border-slate-300 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">ชื่อ - สกุล ผู้อำนวยการโรงเรียน</label>
+                        <input type="text" id="setPrinName" value="${prin}" class="w-full border border-slate-300 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="เช่น นายยอดเยี่ยม บริหารดี">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">รูปลายเซ็น ผู้อำนวยการโรงเรียน (URL) - ถ้ามี</label>
+                        <input type="text" id="setPrinSigUrl" value="${prinSig}" class="w-full border border-slate-300 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="https://...">
+                        <p class="text-xs text-slate-500 mt-2">* แนะนำให้พื้นหลังโปร่งใส (.png) ระบบจะนำไปวางเหนือชื่อ ผอ. ในใบ ปพ.5 และ ปพ.6 อัตโนมัติ</p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-200 text-right">
+                        <button onclick="window.saveSystemSettings()" class="bg-primary hover:bg-[#005cbf] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-md transition-colors"><i class="fas fa-save mr-2"></i> บันทึกการตั้งค่า</button>
+                    </div>
+                </div>
+            </div>`;
+    };
+
+    window.saveSystemSettings = async function() {
+        let sysName = document.getElementById('setSystemName').value.trim();
+        let logo = document.getElementById('setLogoUrl').value.trim();
+        let prin = document.getElementById('setPrinName').value.trim();
+        let prinSig = document.getElementById('setPrinSigUrl').value.trim();
+        let cYear = document.getElementById('setCurrentYear').value.trim();
+        let cTerm = document.getElementById('setCurrentTerm').value.trim();
+        
+        window.showLoader('กำลังบันทึกการตั้งค่า...');
+        let settingsObj = { systemName: sysName, logoUrl: logo, principalName: prin, principalSigUrl: prinSig, currentYear: cYear, currentTerm: cTerm };
+        
+        const updates = Object.keys(settingsObj).map(key => ({ key: key, value: settingsObj[key] }));
+        
+        const { error } = await supabase.from('settings').upsert(updates);
+        if (error) { window.hideLoader(); return window.customAlert('ล้มเหลวในการบันทึก', 'error'); }
+        
+        db.settings = settingsObj;
+        window.updateDynamicSystemNames();
+        window.hideLoader(); window.customAlert('บันทึกการตั้งค่าระบบเรียบร้อยแล้ว', 'success');
+    };
+
+    window.renderUserMgmt = function(container) {
+        container.innerHTML = `<div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8"><h2 class="text-2xl font-bold text-primary mb-6"><i class="fas fa-users text-secondary mr-2"></i> จัดการผู้ใช้งานระบบ</h2><div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8"><h3 class="font-bold text-slate-700 mb-4" id="userFormTitle">เพิ่มผู้ใช้งานใหม่</h3><div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end mb-6"><div><label class="block text-xs font-bold text-slate-500 mb-1">ชื่อ-สกุล</label><input type="text" id="addUName" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="เช่น ครูสมหมาย สอนดี"></div><div><label class="block text-xs font-bold text-slate-500 mb-1">Username</label><input type="text" id="addUUser" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="Username"></div><div><label class="block text-xs font-bold text-slate-500 mb-1">Password</label><input type="password" id="addUPass" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="Password"></div><div><label class="block text-xs font-bold text-slate-500 mb-1">สิทธิ์ใช้งาน</label><select id="addURole" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none"><option value="teacher">ครูผู้สอน</option><option value="admin">ผู้ดูแลระบบ</option></select></div><div><label class="block text-xs font-bold text-slate-500 mb-1">รูปลายเซ็น (URL)</label><input type="text" id="addUSigUrl" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="https://... (ไม่มีเว้นว่าง)"></div><div class="md:col-span-5 text-right flex justify-end gap-3"><button id="cancelEditBtn" onclick="window.cancelEditUser()" class="hidden bg-slate-200 text-slate-700 px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-300 shadow-md transition-colors"><i class="fas fa-times mr-2"></i> ยกเลิก</button><button id="saveUserBtn" onclick="window.addUserAction()" class="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-md transition-colors"><i class="fas fa-plus mr-2"></i> เพิ่มผู้ใช้งาน</button></div></div><div class="border-t border-slate-200 pt-6"><h3 class="font-bold text-slate-700 mb-4">นำเข้าผู้ใช้งานด้วยไฟล์ CSV</h3><div class="flex flex-wrap gap-4 items-center"><button onclick="window.downloadUserCSVTemplate()" class="bg-white text-primary border border-primary/30 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-themebg shadow-sm transition-colors flex items-center"><i class="fas fa-file-download mr-2"></i> โหลดแม่แบบ CSV</button><div class="flex-1 relative"><input type="file" id="csvUserFileInput" accept=".csv" class="w-full bg-white border border-slate-300 p-2 rounded-xl text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-themebg file:text-primary hover:file:bg-secondary/20 cursor-pointer"></div><button onclick="window.uploadUserCSV()" class="bg-secondary text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-[#00b3e6] shadow-md transition-colors flex items-center"><i class="fas fa-file-upload mr-2"></i> อัปโหลดข้อมูล</button></div></div></div><div class="overflow-x-auto rounded-xl border border-slate-200" id="userTableArea">${window.buildUserTable()}</div></div>`;
+    };
+    
+    window.buildUserTable = function() { let html = `<table class="w-full text-left border-collapse"><thead><tr class="bg-slate-100 text-slate-600 text-sm border-b border-slate-200"><th class="p-4 font-bold">ชื่อ-สกุล</th><th class="p-4 font-bold">Username</th><th class="p-4 font-bold text-center">สิทธิ์</th><th class="p-4 font-bold text-center">ลายเซ็น</th><th class="p-4 font-bold text-center w-48">จัดการ</th></tr></thead><tbody>`; db.users.forEach(u => { html += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-4 text-sm font-medium text-slate-800">${u.name}</td><td class="p-4 text-sm text-slate-600">${u.username}</td><td class="p-4 text-center"><span class="px-3 py-1 text-xs font-bold rounded-full ${u.role==='admin'?'bg-primary/20 text-primary':'bg-secondary/20 text-secondary'}">${u.role==='admin'?'ผู้ดูแลระบบ':'ครูผู้สอน'}</span></td><td class="p-4 text-center">${u.signatureUrl ? '<i class="fas fa-check-circle text-secondary"></i> มี' : '<span class="text-slate-400 text-xs">ไม่มี</span>'}</td><td class="p-4 text-center space-x-2"><button onclick="window.editUserAction('${u.id}')" class="text-amber-500 hover:text-amber-700 p-2 bg-amber-50 rounded-lg transition-colors"><i class="fas fa-edit"></i> แก้ไข</button><button onclick="window.deleteUserAction('${u.id}')" class="text-rose-500 hover:text-rose-700 p-2 bg-rose-50 rounded-lg transition-colors"><i class="fas fa-trash-alt"></i> ลบ</button></td></tr>`; }); return html + `</tbody></table>`; };
+    
+    window.editUserAction = function(id) {
+        const u = db.users.find(x => x.id === id); if(!u) return;
+        document.getElementById('addUName').value = u.name; document.getElementById('addUUser').value = u.username; document.getElementById('addUPass').value = u.password; document.getElementById('addURole').value = u.role; document.getElementById('addUSigUrl').value = u.signatureUrl || '';
+        editingUserId = id; document.getElementById('userFormTitle').innerText = 'แก้ไขข้อมูลผู้ใช้งาน';
+        let saveBtn = document.getElementById('saveUserBtn'); saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i> บันทึกการแก้ไข'; saveBtn.className = 'bg-amber-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-amber-600 shadow-md transition-colors';
+        document.getElementById('cancelEditBtn').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    
+    window.cancelEditUser = function() {
+        editingUserId = null; document.getElementById('userFormTitle').innerText = 'เพิ่มผู้ใช้งานใหม่';
+        document.getElementById('addUName').value = ''; document.getElementById('addUUser').value = ''; document.getElementById('addUPass').value = ''; document.getElementById('addURole').value = 'teacher'; document.getElementById('addUSigUrl').value = '';
+        let saveBtn = document.getElementById('saveUserBtn'); saveBtn.innerHTML = '<i class="fas fa-plus mr-2"></i> เพิ่มผู้ใช้งาน'; saveBtn.className = 'bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-md transition-colors';
+        document.getElementById('cancelEditBtn').classList.add('hidden');
+    };
+
+    window.addUserAction = async function() { 
+        let name = document.getElementById('addUName').value.trim(); let user = document.getElementById('addUUser').value.trim(); let pass = document.getElementById('addUPass').value.trim(); let role = document.getElementById('addURole').value; let sig = document.getElementById('addUSigUrl').value.trim();
+        if(!name || !user || !pass) return window.customAlert('กรุณากรอกข้อมูลให้ครบ', 'warning'); 
+        
+        window.showLoader('กำลังบันทึก...');
+        let payload = { username: user, password: pass, role: role, name: name, signature_url: sig };
+        let response;
+        if(editingUserId) {
+            response = await supabase.from('users').update(payload).eq('id', editingUserId);
+        } else {
+            response = await supabase.from('users').insert([payload]);
+        }
+        
+        if (response.error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
+        await window.fetchDatabase();
+        window.hideLoader(); window.customAlert(editingUserId ? 'อัปเดตข้อมูลสำเร็จ' : 'เพิ่มผู้ใช้งานสำเร็จ', 'success'); 
+        window.cancelEditUser(); window.renderUserMgmt(document.getElementById('contentArea'));
+    };
+    
+    window.deleteUserAction = async function(id) { 
+        if(id === currentUser.id) return window.customAlert('ไม่สามารถลบตัวเองได้', 'error'); 
+        window.customConfirm('ต้องการลบผู้ใช้งานนี้ใช่หรือไม่?', async function() {
+            window.showLoader('กำลังลบข้อมูล...');
+            await supabase.from('users').delete().eq('id', id);
+            await window.fetchDatabase();
+            window.hideLoader(); window.renderUserMgmt(document.getElementById('contentArea'));
+        });
+    };
+
+    window.downloadUserCSVTemplate = function() {
+        const csvContent = "\uFEFFName,Username,Password,Role,SignatureUrl\nครูสมศรี สอนเก่ง,somsri,1234,teacher,\nผอ.ยอดเยี่ยม บริหารดี,admin2,admin,https://i.postimg.cc/...";
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", "แม่แบบ_ผู้ใช้งาน.csv"); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    };
+    
+    window.uploadUserCSV = function() {
+        const fileInput = document.getElementById('csvUserFileInput'); const file = fileInput.files[0];
+        if (!file) return window.customAlert('กรุณาเลือกไฟล์ CSV ก่อน', 'warning');
+        window.showLoader('กำลังอ่านไฟล์...'); const reader = new FileReader();
+        reader.onload = async function(e) {
+            const text = e.target.result; const rows = text.split(/\r?\n/); let usersArray = [];
+            for(let i=1; i<rows.length; i++) {
+                if(!rows[i].trim()) continue; let cols = rows[i].split(',');
+                if(cols.length >= 4) {
+                    let name = cols[0].trim(); let user = cols[1].trim(); let pass = cols[2].trim(); let role = cols[3].trim().toLowerCase() === 'admin' ? 'admin' : 'teacher'; let sigUrl = cols[4] ? cols[4].trim() : '';
+                    if(name && user && pass) usersArray.push({ username: user, password: pass, role: role, name: name, signature_url: sigUrl });
+                }
+            }
+            if(usersArray.length > 0) {
+                window.showLoader('กำลังบันทึกลง Supabase...');
+                const { error } = await supabase.from('users').upsert(usersArray, { onConflict: 'username' });
+                if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
+                await window.fetchDatabase();
+                window.hideLoader(); window.customAlert(`นำเข้าสำเร็จ ${usersArray.length} รายการ`, 'success'); 
+                window.renderUserMgmt(document.getElementById('contentArea'));
+            } else { window.hideLoader(); window.customAlert('ไม่พบข้อมูลที่ถูกต้องในไฟล์', 'error'); }
+        }; reader.readAsText(file);
+    };
+
+    window.renderSubjectMgmt = function(container) {
+        container.innerHTML = `
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+            <h2 class="text-2xl font-bold text-primary mb-6"><i class="fas fa-book-open text-secondary mr-2"></i> จัดการรายวิชา</h2>
+            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
+                <h3 class="font-bold text-slate-700 mb-4">เพิ่มรายวิชาใหม่</h3>
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ระดับชั้น/ห้อง</label>
+                        <input type="text" id="addSLevel" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="เช่น ม.1/1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">รหัสวิชา</label>
+                        <input type="text" id="addSCode" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="เช่น ท21101">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ชื่อวิชา</label>
+                        <input type="text" id="addSName" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="ชื่อรายวิชา">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">หน่วยกิต</label>
+                        <input type="number" step="0.5" id="addSCredit" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="1.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ครูผู้สอน</label>
+                        <input type="text" id="addSTeacher" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="ชื่อครูประจำวิชา">
+                    </div>
+                    <div class="md:col-span-6 text-right mt-2">
+                        <button onclick="window.addSubjectAction()" class="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-md transition-colors"><i class="fas fa-plus mr-2"></i> บันทึกวิชา</button>
+                    </div>
+                </div>
+            </div>
+            <div id="subjectTableArea">${window.buildSubjectTable()}</div>
+        </div>`;
+    };
+    
+    window.buildSubjectTable = function() {
+        let html = ''; let levels = [...new Set(db.subjects.map(s => s.level))].sort(); if(levels.length === 0) return '<div class="text-center text-slate-500 py-4">ยังไม่มีข้อมูลรายวิชา</div>';
+        levels.forEach(lvl => { 
+            html += `<div class="mb-6 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                <div class="bg-themebg px-4 py-3 border-b border-secondary/20 font-bold text-primary"><i class="fas fa-chalkboard text-secondary mr-2"></i> รายวิชาชั้น ${lvl}</div>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-sm text-slate-500 border-b border-slate-100">
+                            <th class="p-3 w-32 text-center">รหัสวิชา</th>
+                            <th class="p-3">ชื่อรายวิชา</th>
+                            <th class="p-3 w-48">ครูผู้สอน</th>
+                            <th class="p-3 w-24 text-center">หน่วยกิต</th>
+                            <th class="p-3 w-24 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>`; 
+            db.subjects.filter(s => s.level === lvl).forEach(s => { 
+                html += `<tr class="border-b border-slate-50 hover:bg-slate-50">
+                    <td class="p-3 text-center font-bold text-slate-700">${s.code}</td>
+                    <td class="p-3 text-sm">${s.name}</td>
+                    <td class="p-3 text-sm text-slate-600">${s.teacher || '-'}</td>
+                    <td class="p-3 text-center text-sm">${s.credit.toFixed(1)}</td>
+                    <td class="p-3 text-center"><button onclick="window.deleteSubjectAction('${s.code}', '${s.level}')" class="text-rose-500 hover:text-rose-700 px-2 py-1 bg-rose-50 rounded transition-colors"><i class="fas fa-trash-alt"></i></button></td>
+                </tr>`; 
+            }); 
+            html += `</tbody></table></div>`; 
+        }); 
+        return html;
+    };
+    
+    window.addSubjectAction = async function() { 
+        let lvl = document.getElementById('addSLevel').value.trim(); 
+        let code = document.getElementById('addSCode').value.trim(); 
+        let name = document.getElementById('addSName').value.trim(); 
+        let credit = document.getElementById('addSCredit').value; 
+        let teacher = document.getElementById('addSTeacher').value.trim();
+
+        if(!lvl || !code || !name || !credit) return window.customAlert('กรุณากรอกข้อมูลให้ครบ (ยกเว้นครูผู้สอน ปล่อยว่างได้)', 'warning'); 
+        
+        window.showLoader('กำลังบันทึก...');
+        const { error } = await supabase.from('subjects').insert([{ code: code, name: name, credit: parseFloat(credit), level: lvl, teacher_name: teacher }]);
+        if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว (รหัสวิชาซ้ำกับในระบบ)', 'error'); }
+        
+        await window.fetchDatabase();
+        window.hideLoader(); window.customAlert('เพิ่มรายวิชาสำเร็จ', 'success'); window.renderSubjectMgmt(document.getElementById('contentArea'));
+    };
+    
+    window.deleteSubjectAction = async function(code, level) { 
+        window.customConfirm(`ต้องการลบวิชา ${code} ของชั้น ${level} ใช่หรือไม่?`, async function() {
+            window.showLoader('กำลังลบข้อมูล...');
+            await supabase.from('subjects').delete().eq('code', code).eq('level', level);
+            await window.fetchDatabase();
+            window.hideLoader(); window.renderSubjectMgmt(document.getElementById('contentArea')); 
+        });
+    };
+
+    window.renderAssignMgmt = function(container) {
+        let teachers = db.users.filter(u => u.role === 'teacher'); let allRooms = [...new Set([...db.students.map(s=>s.classRoom), ...db.subjects.map(s=>s.level)])].sort();
+        container.innerHTML = `<div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8"><h2 class="text-2xl font-bold text-primary mb-2"><i class="fas fa-user-cog text-secondary mr-2"></i> มอบหมายสิทธิ์ดูแลห้องเรียน</h2><p class="text-sm text-slate-500 mb-6">ครูที่ได้รับมอบหมาย จะมีสิทธิ์เข้าถึง <strong>"ทุกรายวิชา"</strong> และ <strong>"ประเมินกิจกรรม"</strong> ของห้องเรียนนั้นๆ อัตโนมัติ</p><div class="bg-themebg/50 p-6 rounded-2xl border border-secondary/20 mb-8 flex flex-wrap gap-4 items-end"><div class="flex-1 min-w-[200px]"><label class="block text-xs font-bold text-primary mb-1">เลือกครูผู้สอน</label><select id="assTeacher" class="w-full border border-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none bg-white"><option value="">-- เลือกครู --</option>${teachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select></div><div class="flex-1 min-w-[150px]"><label class="block text-xs font-bold text-primary mb-1">เลือกชั้น / ห้อง</label><select id="assRoom" class="w-full border border-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none bg-white"><option value="">-- เลือกห้อง --</option>${allRooms.map(r => `<option value="${r}">${r}</option>`).join('')}</select></div><button onclick="window.addAssignAction()" class="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-md transition-colors h-[42px]"><i class="fas fa-plus mr-2"></i> มอบหมาย</button></div><div class="overflow-x-auto rounded-xl border border-slate-200"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-100 text-slate-600 text-sm border-b border-slate-200"><th class="p-4 font-bold">ชื่อครูผู้รับผิดชอบ</th><th class="p-4 font-bold text-center">ห้องเรียนที่ดูแล</th><th class="p-4 font-bold text-center">จัดการ</th></tr></thead><tbody>${db.assignments.length === 0 ? `<tr><td colspan="3" class="p-6 text-center text-slate-500">ยังไม่มีการมอบหมายสิทธิ์</td></tr>` : db.assignments.map(a => { let tName = db.users.find(u => u.id === a.userId)?.name || 'ไม่ทราบชื่อ'; return `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-4 text-sm font-medium text-slate-800"><i class="fas fa-chalkboard-teacher text-slate-400 mr-2"></i>${tName}</td><td class="p-4 text-center font-bold text-primary text-lg">${a.classRoom}</td><td class="p-4 text-center"><button onclick="window.deleteAssignAction('${a.userId}', '${a.classRoom}')" class="text-rose-500 hover:text-rose-700 p-2 bg-rose-50 rounded-lg transition-colors"><i class="fas fa-times-circle"></i> ยกเลิกสิทธิ์</button></td></tr>`; }).join('')}</tbody></table></div></div>`;
+    };
+    
+    window.addAssignAction = async function() { 
+        let tid = document.getElementById('assTeacher').value; let room = document.getElementById('assRoom').value; 
+        if(!tid || !room) return window.customAlert('กรุณาเลือกครูและห้องเรียน', 'warning'); 
+        window.showLoader('กำลังบันทึก...');
+        
+        const { error } = await supabase.from('assignments').insert([{ user_id: tid, class_room: room }]);
+        if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว (มีการมอบหมายนี้อยู่แล้ว)', 'error'); }
+        
+        await window.fetchDatabase(); window.hideLoader(); window.customAlert('มอบหมายสิทธิ์สำเร็จ', 'success'); window.renderAssignMgmt(document.getElementById('contentArea'));
+    };
+    
+    window.deleteAssignAction = async function(tid, room) { 
+        window.customConfirm(`ยกเลิกสิทธิ์ดูแลห้อง ${room} ใช่หรือไม่?`, async function() {
+            window.showLoader('กำลังลบข้อมูล...');
+            await supabase.from('assignments').delete().eq('user_id', tid).eq('class_room', room);
+            await window.fetchDatabase(); window.hideLoader(); window.renderAssignMgmt(document.getElementById('contentArea')); 
+        });
+    };
+
+    window.renderStudentMgmt = function(container) {
+        container.innerHTML = `
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+            <h2 class="text-2xl font-bold text-primary mb-2"><i class="fas fa-users text-secondary mr-2"></i> จัดการชั้นเรียน (ข้อมูลนักเรียน)</h2>
+            <p class="text-sm text-slate-500 mb-6">คุณสามารถเพิ่มนักเรียนทีละหลายๆ คนได้ผ่านแม่แบบ CSV</p>
+            
+            <div class="flex flex-wrap gap-4 mb-6 bg-themebg/50 p-5 rounded-2xl border border-secondary/20 items-end">
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-1 uppercase">ปีการศึกษา</label>
+                    <input type="text" id="stuYear" value="${db.settings.currentYear || '2569'}" class="w-full sm:w-32 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none text-center font-bold text-primary">
+                </div>
+                <button onclick="window.loadStudentTable()" class="bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-sm transition-colors"><i class="fas fa-search mr-2"></i> โหลดข้อมูลนักเรียน</button>
+            </div>
+
+            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
+                <h3 class="font-bold text-slate-700 mb-4">นำเข้านักเรียนด้วยไฟล์ CSV ไปยังปีการศึกษาที่เลือก</h3>
+                <div class="flex flex-wrap gap-4 items-center">
+                    <button onclick="window.downloadCSVTemplate()" class="bg-white text-primary border border-primary/30 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-themebg shadow-sm transition-colors flex items-center"><i class="fas fa-file-download mr-2"></i> 1. โหลดแม่แบบ CSV</button>
+                    <div class="flex-1 relative">
+                        <input type="file" id="csvFileInput" accept=".csv" class="w-full bg-white border border-slate-300 p-2 rounded-xl text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-themebg file:text-primary hover:file:bg-secondary/20 cursor-pointer">
+                    </div>
+                    <button onclick="window.uploadCSV()" class="bg-secondary text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-[#00b3e6] shadow-md transition-colors flex items-center"><i class="fas fa-file-upload mr-2"></i> 2. อัปโหลดข้อมูล</button>
+                </div>
+                <p class="text-xs text-slate-500 mt-3">* โครงสร้างคอลัมน์: StudentID, Student(เลขที่), NoPrefix, FirstName, LastName, Class, Room</p>
+            </div>
+            
+            <div class="flex justify-between items-center mb-4 mt-8"><h3 class="font-bold text-slate-700">รายชื่อนักเรียนในระบบ</h3></div>
+            <div id="studentTableArea" class="overflow-x-auto rounded-xl border border-slate-200">
+                <div class="text-center p-10 text-slate-400">กรุณากดปุ่มโหลดข้อมูลนักเรียน</div>
+            </div>
+        </div>`;
+        setTimeout(window.loadStudentTable, 100);
+    };
+
+    window.downloadCSVTemplate = function() {
+        const csvContent = "\uFEFFStudentID,Student,NoPrefix,FirstName,LastName,Class,Room\n1111111111111,1,ด.ช.,รักเรียน,ขยันยิ่ง,ป.1,1\n2222222222222,2,ด.ญ.,สวยใส,จิตใจดี,ม.1,1";
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", "แม่แบบ_นักเรียน.csv"); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    };
+
+    window.uploadCSV = function() {
+        const fileInput = document.getElementById('csvFileInput'); const file = fileInput.files[0];
+        const year = document.getElementById('stuYear').value;
+        if (!file || !year) return window.customAlert('กรุณาเลือกไฟล์ CSV และระบุปีการศึกษาก่อน', 'warning');
+        window.showLoader('กำลังอ่านไฟล์...'); const reader = new FileReader();
+        reader.onload = async function(e) {
+            const text = e.target.result; const rows = text.split(/\r?\n/); let studentsArray = [];
+            for(let i=1; i<rows.length; i++) {
+                if(!rows[i].trim()) continue; let cols = rows[i].split(',');
+                if(cols.length >= 7) {
+                    let id13 = cols[0].trim(); let number = parseInt(cols[1].trim());
+                    let name = cols[2].trim() + cols[3].trim() + ' ' + cols[4].trim(); let classRoom = cols[5].trim() + '/' + cols[6].trim();
+                    if(id13 && name) { studentsArray.push({ id13: id13, number: number, name: name, class_room: classRoom, year: year }); }
+                }
+            }
+            if(studentsArray.length > 0) {
+                window.showLoader('กำลังบันทึกลง Supabase...');
+                const { error } = await supabase.from('students').upsert(studentsArray, { onConflict: 'id13,year' });
+                if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
+                await window.fetchDatabase(); window.hideLoader(); window.customAlert(`นำเข้าข้อมูลสำเร็จ ${studentsArray.length} รายการ`, 'success');
+                window.loadStudentTable(); fileInput.value = '';
+            } else { window.hideLoader(); window.customAlert('ไม่พบข้อมูลที่สามารถนำเข้าได้', 'error'); }
+        }; reader.readAsText(file);
+    };
+
+    window.loadStudentTable = function() {
+        let y = document.getElementById('stuYear').value;
+        let allowedClasses = currentUser.role === 'admin' ? [...new Set(db.students.map(s=>s.classRoom))] : db.assignments.filter(a => a.userId === currentUser.id).map(a => a.classRoom);
+        let displayStudents = db.students.filter(s => allowedClasses.includes(s.classRoom) && s.year === y);
+        if(displayStudents.length === 0) { 
+            document.getElementById('studentTableArea').innerHTML = `<div class="text-center text-slate-500 py-10">ยังไม่มีข้อมูลนักเรียนในชั้นเรียนที่รับผิดชอบ สำหรับปีการศึกษา ${y}</div>`; 
+            return;
+        }
+        let html = `<table class="w-full text-left border-collapse"><thead><tr class="bg-slate-100 text-slate-600 text-sm border-b border-slate-200"><th class="p-3 w-20 text-center">เลขที่</th><th class="p-3 w-40 text-center">เลขประจำตัวประชาชน</th><th class="p-3">ชื่อ-สกุล</th><th class="p-3 w-24 text-center">ชั้น/ห้อง</th><th class="p-3 w-24 text-center">จัดการ</th></tr></thead><tbody>`;
+        displayStudents.sort((a,b) => { if(a.classRoom === b.classRoom) return a.number - b.number; return a.classRoom.localeCompare(b.classRoom); }).forEach(s => {
+            html += `<tr class="border-b border-slate-50 hover:bg-slate-50"><td class="p-3 text-center text-slate-600">${s.number}</td><td class="p-3 text-center font-mono text-slate-500 text-sm">${s.id13}</td><td class="p-3 font-medium text-slate-800">${s.name}</td><td class="p-3 text-center text-primary font-bold">${s.classRoom}</td><td class="p-3 text-center"><button onclick="window.deleteStudentAction('${s.id13}', '${y}')" class="text-rose-500 hover:text-rose-700 px-2 py-1 bg-rose-50 rounded transition-colors" title="ลบข้อมูล"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+        });
+        html += `</tbody></table>`; 
+        document.getElementById('studentTableArea').innerHTML = html;
+    };
+
+    window.deleteStudentAction = async function(id13, y) { 
+        window.customConfirm(`ต้องการลบนักเรียนรหัส ${id13} ในปีการศึกษา ${y} ใช่หรือไม่?`, async function() {
+            window.showLoader('กำลังลบ...');
+            await supabase.from('students').delete().eq('id13', id13).eq('year', y);
+            await window.fetchDatabase(); window.hideLoader(); window.loadStudentTable();
+        });
+    };
+
+    window.renderScoreEntry = function(container) {
+        let allowedClasses = currentUser.role === 'admin' ? [...new Set(db.students.map(s=>s.classRoom))] : db.assignments.filter(a => a.userId === currentUser.id).map(a => a.classRoom);
+        let cYear = db.settings?.currentYear || '2569';
+        let cTerm = db.settings?.currentTerm || '2';
+        
+        container.innerHTML = `
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+            <h2 class="text-2xl font-bold text-primary mb-6"><i class="fas fa-pen-to-square text-secondary mr-2"></i> กรอกคะแนนรายวิชา</h2>
+            <div class="flex flex-wrap gap-4 mb-6 bg-themebg/50 p-5 rounded-2xl border border-secondary/20 items-end">
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-2 uppercase">ปีการศึกษา</label>
+                    <input type="text" id="scoreYear" value="${cYear}" class="w-full sm:w-24 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none text-center">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-2 uppercase">ภาคเรียน</label>
+                    <select id="scoreTerm" class="w-full sm:w-24 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none text-center">
+                        <option value="1" ${cTerm==='1'?'selected':''}>1</option>
+                        <option value="2" ${cTerm==='2'?'selected':''}>2</option>
+                    </select>
+                </div>
+                <div><label class="block text-xs font-bold text-primary mb-2 uppercase">เลือกชั้นเรียน</label><select id="scoreClass" onchange="window.updateScoreSubjectDropdown()" class="w-full sm:w-48 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none"><option value="">-- เลือกห้อง --</option>${allowedClasses.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                <div><label class="block text-xs font-bold text-primary mb-2 uppercase">เลือกวิชาของห้องนี้</label><select id="scoreSubject" class="w-full sm:w-64 border border-slate-300 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none bg-slate-100" disabled><option value="">-- เลือกห้องก่อน --</option></select></div>
+                
+                <button onclick="window.loadScoreTable()" class="bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-sm transition-colors"><i class="fas fa-search mr-2"></i> โหลดรายชื่อ</button>
+                <button onclick="window.saveScores()" class="bg-secondary text-white px-6 py-3 rounded-xl shadow-md font-bold hover:bg-[#00b3e6] transition-colors ml-auto"><i class="fas fa-save mr-2"></i> บันทึกผล</button>
+            </div>
+            <div class="bg-themebg border-l-4 border-secondary p-4 rounded-lg mb-6 text-sm text-primary flex items-center shadow-sm"><i class="fas fa-info-circle text-secondary mr-3 text-lg"></i><span><strong>เคล็ดลับ:</strong> รองรับการ Copy/Paste คะแนนจาก Excel คลิกที่ช่องแรกแล้วกด <kbd class="bg-white border border-slate-300 rounded px-1 font-mono text-xs shadow-sm">Ctrl+V</kbd> วางรวดเดียวได้เลย (หากไม่มีคะแนน สามารถพิมพ์หรือวางตัว <strong>"ร"</strong> ได้)</span></div>
+            <div id="scoreTableArea" class="overflow-x-auto min-h-[300px] border border-slate-200 rounded-2xl excel-table">
+                <div class="text-center text-slate-400 py-20 font-medium">กรุณาเลือกข้อมูลปีการศึกษา ชั้นเรียนและวิชา แล้วกด "โหลดรายชื่อ"</div>
+            </div>
+        </div>`;
+    };
+
+    window.updateScoreSubjectDropdown = function() {
+        let room = document.getElementById('scoreClass').value; let subSelect = document.getElementById('scoreSubject');
+        if(!room) { subSelect.innerHTML = '<option value="">-- เลือกห้องก่อน --</option>'; subSelect.disabled = true; subSelect.classList.add('bg-slate-100'); return; }
+        let roomSubjects = db.subjects.filter(s => s.level === room);
+        if(roomSubjects.length === 0) { subSelect.innerHTML = '<option value="">ไม่มีวิชาสำหรับห้องนี้</option>'; subSelect.disabled = true; }
+        else { subSelect.innerHTML = roomSubjects.map(s => `<option value="${s.code}">[${s.code}] ${s.name}</option>`).join(''); subSelect.disabled = false; subSelect.classList.remove('bg-slate-100'); }
+    };
+
+    window.loadScoreTable = function() {
+        const selClass = document.getElementById('scoreClass').value; const selSubjCode = document.getElementById('scoreSubject').value;
+        const selYear = document.getElementById('scoreYear').value; const selTerm = document.getElementById('scoreTerm').value;
+        if(!selClass || !selSubjCode || !selYear || !selTerm) return window.customAlert('กรุณาเลือกข้อมูลให้ครบ', 'warning');
+        let students = db.students.filter(s => s.classRoom === selClass && s.year === selYear); if(students.length === 0) { document.getElementById('scoreTableArea').innerHTML = `<div class="text-center text-rose-500 py-10 font-bold">ไม่พบนักเรียนในชั้นเรียนนี้ สำหรับปีการศึกษา ${selYear}</div>`; return; }
+        
+        const isPrimary = window.isPrimaryClass(selClass);
+        
+        let tableHtml = `<table class="w-full text-left border-collapse" id="inputScoreTable"><thead><tr class="bg-slate-100 text-slate-600 text-sm border-b border-slate-200"><th class="p-4 font-bold text-center w-40">รหัส 13 หลัก</th><th class="p-4 font-bold">ชื่อ - สกุล</th>
+            ${isPrimary ? 
+            `<th class="p-4 font-bold text-center w-32 bg-[#EAF7FF]">คะแนนเทอม 1 (100)</th><th class="p-4 font-bold text-center w-32 bg-[#EAF7FF]">คะแนนเทอม 2 (100)</th><th class="p-4 font-bold text-center w-28 bg-[#00C6FF]/10">เฉลี่ยรวม</th>`
+            :
+            `<th class="p-4 font-bold text-center w-32 bg-[#EAF7FF]">คะแนนเก็บ (70)</th><th class="p-4 font-bold text-center w-32 bg-[#EAF7FF]">ปลายภาค (30)</th><th class="p-4 font-bold text-center w-28 bg-[#00C6FF]/10">รวม (100)</th>`
+            }
+            <th class="p-4 font-bold text-center w-24 bg-rose-50">เกรด</th></tr></thead><tbody>`;
+        
+        students.sort((a,b)=>a.number-b.number).forEach((s, idx) => {
+            let key = `${selYear}_${selTerm}_${s.id13}_${selSubjCode}`; let data = db.scores[key] || { accum: '', final: '' }; 
+            let calc = window.calculateStudentGrade(selClass, data.accum, data.final);
+            tableHtml += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition" data-id13="${s.id13}"><td class="p-3 text-center text-sm font-mono text-slate-500">${s.id13}</td><td class="p-3 text-sm text-slate-800 font-medium">${s.name}</td><td class="p-2 border-l border-slate-100 bg-[#EAF7FF]/50"><input type="text" class="score-input input-accum" data-row="${idx}" data-col="0" value="${data.accum}" oninput="window.updateRowCalc(this)"></td><td class="p-2 border-l border-slate-100 bg-[#EAF7FF]/50"><input type="text" class="score-input input-final" data-row="${idx}" data-col="1" value="${data.final}" oninput="window.updateRowCalc(this)"></td><td class="p-3 border-l border-slate-100 text-center font-bold text-primary calc-total bg-[#00C6FF]/5 text-lg">${calc.total}</td><td class="p-3 border-l border-slate-100 text-center font-bold text-rose-600 calc-grade bg-rose-50/30 text-xl">${calc.grade}</td></tr>`;
+        });
+        tableHtml += `</tbody></table>`; document.getElementById('scoreTableArea').innerHTML = tableHtml;
+
+        document.getElementById('inputScoreTable').addEventListener('paste', function(e) {
+            e.preventDefault(); let pastedData = (e.clipboardData || window.clipboardData).getData('Text'); if(!pastedData) return;
+            let activeEl = document.activeElement; if(!activeEl || !activeEl.hasAttribute('data-row')) return;
+            let startRow = parseInt(activeEl.getAttribute('data-row')), startCol = parseInt(activeEl.getAttribute('data-col'));
+            pastedData.trim().split('\n').forEach((rowData, rIdx) => {
+                rowData.split('\t').forEach((cellData, cIdx) => {
+                    let target = this.querySelector(`[data-row="${startRow + rIdx}"][data-col="${startCol + cIdx}"]`);
+                    if(target) { target.value = cellData.trim(); window.updateRowCalc(target); }
+                });
+            });
+        });
+    };
+
+    window.updateRowCalc = function(input) { 
+        let tr = input.closest('tr'); 
+        let selClass = document.getElementById('scoreClass').value;
+        let accum = tr.querySelector('.input-accum').value;
+        let final = tr.querySelector('.input-final').value;
+        let result = window.calculateStudentGrade(selClass, accum, final); 
+        tr.querySelector('.calc-total').innerText = result.total; 
+        tr.querySelector('.calc-grade').innerText = result.grade; 
+    };
+    
+    window.saveScores = async function() { 
+        window.showLoader('กำลังบันทึกคะแนนลง Supabase...'); 
+        const subjCode = document.getElementById('scoreSubject').value; 
+        const scoreYear = document.getElementById('scoreYear').value;
+        const scoreTerm = document.getElementById('scoreTerm').value;
+        let upsertData = [];
+        
+        document.querySelectorAll('#inputScoreTable tbody tr').forEach(tr => { 
+            let id13 = tr.getAttribute('data-id13'); let a = tr.querySelector('.input-accum').value.trim(); let f = tr.querySelector('.input-final').value.trim(); 
+            if(a !== '' || f !== '') {
+                upsertData.push({ id13: id13, subject_code: subjCode, year: scoreYear, term: scoreTerm, accum_score: a, final_score: f });
+            }
+        }); 
+        
+        if (upsertData.length > 0) {
+            const { error } = await supabase.from('scores').upsert(upsertData, { onConflict: 'id13, subject_code, year, term' });
+            if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
+        }
+        
+        await window.fetchDatabase();
+        window.hideLoader(); window.customAlert('บันทึกคะแนนเรียบร้อย', 'success'); 
+    };
+
+    window.renderEvalEntry = function(container) {
+        let allowedClasses = currentUser.role === 'admin' ? [...new Set(db.students.map(s=>s.classRoom))] : db.assignments.filter(a => a.userId === currentUser.id).map(a => a.classRoom);
+        let cYear = db.settings?.currentYear || '2569';
+        let cTerm = db.settings?.currentTerm || '2';
+        
+        container.innerHTML = `
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+            <h2 class="text-2xl font-bold text-primary mb-6"><i class="fas fa-clipboard-check text-secondary mr-2"></i> ประเมินกิจกรรม / คุณลักษณะอันพึงประสงค์</h2>
+            <div class="flex flex-wrap gap-4 mb-4 bg-themebg/50 p-5 rounded-2xl border border-secondary/20 items-end">
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-2 uppercase">ปีการศึกษา</label>
+                    <input type="text" id="evalYear" value="${cYear}" class="w-full sm:w-24 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none text-center">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-2 uppercase">ภาคเรียน</label>
+                    <select id="evalTerm" class="w-full sm:w-24 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none text-center">
+                        <option value="1" ${cTerm==='1'?'selected':''}>1</option>
+                        <option value="2" ${cTerm==='2'?'selected':''}>2</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-2 uppercase">เลือกชั้นเรียน</label>
+                    <select id="evalClass" class="w-full sm:w-48 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none">
+                        <option value="">-- เลือกห้อง --</option>
+                        ${allowedClasses.map(c => `<option value="${c}">${c}</option>`).join('')}
+                    </select>
+                </div>
+                <button onclick="window.loadEvalTable()" class="bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-sm transition-colors"><i class="fas fa-search mr-2"></i> โหลดรายชื่อ</button>
+                <button onclick="window.saveEvaluations()" class="bg-secondary text-white px-6 py-3 rounded-xl shadow-md font-bold hover:bg-[#00b3e6] transition-colors ml-auto"><i class="fas fa-save mr-2"></i> บันทึกผล</button>
+            </div>
+            <div class="bg-themebg border-l-4 border-secondary p-4 rounded-lg mb-6 text-sm text-primary flex items-center shadow-sm">
+                <i class="fas fa-info-circle text-secondary mr-3 text-lg"></i><span><strong>วิธีประเมิน:</strong> คลิกที่ปุ่มเพื่อเลือกผลการประเมิน (หากต้องการล้างค่า ให้คลิกซ้ำอีก 1 ครั้ง)</span>
+            </div>
+            <div id="evalTableArea" class="overflow-x-auto min-h-[300px] border border-slate-200 rounded-2xl">
+                <div class="text-center text-slate-400 py-20 font-medium">กรุณาเลือกชั้นเรียน แล้วกด "โหลดรายชื่อ"</div>
+            </div>
+        </div>`;
+    };
+
+    const makeButtonGroup = (val, r, c, type) => {
+        const options = type === 'activity' ? ['ไม่ผ่าน', 'ผ่าน'] : ['ไม่ผ่าน', 'ผ่าน', 'ดี', 'ดีเยี่ยม'];
+        let html = `<div class="flex flex-wrap gap-1 justify-center eval-btn-group"><input type="hidden" class="eval-data-input" value="${val}">`;
+        options.forEach(opt => {
+            let isActive = val === opt; let colorClass = "";
+            if(opt === 'ไม่ผ่าน') colorClass = isActive ? "bg-rose-500 text-white border-rose-500 shadow-md" : "bg-white text-rose-500 border-rose-200 hover:bg-rose-50";
+            else if(opt === 'ผ่าน') colorClass = isActive ? "bg-amber-500 text-white border-amber-500 shadow-md" : "bg-white text-amber-500 border-amber-200 hover:bg-amber-50";
+            else if(opt === 'ดี') colorClass = isActive ? "bg-primary text-white border-primary shadow-md" : "bg-white text-primary border-primary/30 hover:bg-themebg";
+            else if(opt === 'ดีเยี่ยม') colorClass = isActive ? "bg-secondary text-white border-secondary shadow-md" : "bg-white text-secondary border-secondary/30 hover:bg-themebg";
+            html += `<button type="button" onclick="window.selectEvalBtn(this, '${opt}')" class="px-2 py-1 rounded-full text-[11px] xl:text-xs font-bold border transition-all cursor-pointer flex items-center whitespace-nowrap ${colorClass}">${opt}</button>`;
+        });
+        return html + `</div>`;
+    };
+
+    window.selectEvalBtn = function(btn, val) {
+        let group = btn.closest('.eval-btn-group'); let hiddenInput = group.querySelector('.eval-data-input');
+        if(hiddenInput.value === val) hiddenInput.value = ''; else hiddenInput.value = val;
+        let currentVal = hiddenInput.value; let buttons = group.querySelectorAll('button');
+        buttons.forEach(b => {
+            let optText = b.innerText.trim(); let isAct = currentVal === optText;
+            b.className = "px-2 py-1 rounded-full text-[11px] xl:text-xs font-bold border transition-all cursor-pointer flex items-center whitespace-nowrap";
+            if(optText === 'ไม่ผ่าน') b.classList.add(...(isAct ? ["bg-rose-500","text-white","border-rose-500","shadow-md"] : ["bg-white","text-rose-500","border-rose-200","hover:bg-rose-50"]));
+            else if(optText === 'ผ่าน') b.classList.add(...(isAct ? ["bg-amber-500","text-white","border-amber-500","shadow-md"] : ["bg-white","text-amber-500","border-amber-200","hover:bg-amber-50"]));
+            else if(optText === 'ดี') b.classList.add(...(isAct ? ["bg-primary","text-white","border-primary","shadow-md"] : ["bg-white","text-primary","border-primary/30","hover:bg-themebg"]));
+            else if(optText === 'ดีเยี่ยม') b.classList.add(...(isAct ? ["bg-secondary","text-white","border-secondary","shadow-md"] : ["bg-white","text-secondary","border-secondary/30","hover:bg-themebg"]));
+        });
+    };
+
+    window.loadEvalTable = function() {
+        const selClass = document.getElementById('evalClass').value; if(!selClass) return window.customAlert('กรุณาเลือกห้อง', 'warning');
+        const evalYear = document.getElementById('evalYear').value; const evalTerm = document.getElementById('evalTerm').value;
+        const students = db.students.filter(s => s.classRoom === selClass && s.year === evalYear).sort((a,b)=>a.number-b.number); 
+        if(students.length === 0) { document.getElementById('evalTableArea').innerHTML = `<div class="text-center text-rose-500 py-10 font-bold">ไม่พบนักเรียนในชั้นเรียนนี้ สำหรับปีการศึกษา ${evalYear}</div>`; return; }
+        
+        let tableHtml = `<table class="w-full text-left border-collapse"><thead><tr class="bg-slate-100 text-slate-600 text-sm border-b border-slate-200"><th rowspan="2" class="p-3 font-bold text-center w-32 border-r border-slate-200">รหัส 13 หลัก</th><th rowspan="2" class="p-3 font-bold border-r border-slate-200 min-w-[150px]">ชื่อ - สกุล</th><th colspan="3" class="p-2 font-bold text-center bg-blue-50/50 border-b border-r border-slate-200">กิจกรรมพัฒนาผู้เรียน</th><th colspan="2" class="p-2 font-bold text-center bg-[#EAF7FF] border-b border-slate-200">คุณลักษณะฯ และ อ่านคิดฯ</th></tr><tr class="bg-slate-50 text-xs text-slate-500 border-b border-slate-200"><th class="p-2 text-center w-28 border-r border-slate-200 bg-blue-50/30">แนะแนว</th><th class="p-2 text-center w-28 border-r border-slate-200 bg-blue-50/30">ลูกเสือ/เนตรฯ</th><th class="p-2 text-center w-28 border-r border-slate-200 bg-blue-50/30">ชุมนุม/ชมรม</th><th class="p-2 text-center w-48 border-r border-slate-200 bg-[#EAF7FF]/50">คุณลักษณะฯ</th><th class="p-2 text-center w-48 bg-[#EAF7FF]/50">อ่านคิดวิเคราะห์ฯ</th></tr></thead><tbody>`;
+        
+        students.forEach((s, idx) => {
+            let ev = db.evaluations[`${evalYear}_${evalTerm}_${s.id13}`] || { guidance: '', scout: '', club: '', char: 'ดีเยี่ยม', read: 'ดีเยี่ยม' };
+            tableHtml += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50 transition" data-id13="${s.id13}">
+                <td class="p-2 text-center text-xs font-mono text-slate-500 border-r border-slate-100">${s.id13}</td>
+                <td class="p-2 text-sm text-slate-800 font-medium prevent-wrap border-r border-slate-100">${s.name}</td>
+                <td class="p-2 border-r border-slate-100 bg-blue-50/20">${makeButtonGroup(ev.guidance, idx, 0, 'activity')}</td>
+                <td class="p-2 border-r border-slate-100 bg-blue-50/20">${makeButtonGroup(ev.scout, idx, 1, 'activity')}</td>
+                <td class="p-2 border-r border-slate-100 bg-blue-50/20">${makeButtonGroup(ev.club, idx, 2, 'activity')}</td>
+                <td class="p-2 border-r border-slate-100 bg-[#EAF7FF]/30">${makeButtonGroup(ev.char, idx, 3, 'attribute')}</td>
+                <td class="p-2 bg-[#EAF7FF]/30">${makeButtonGroup(ev.read, idx, 4, 'attribute')}</td>
+            </tr>`;
+        });
+        document.getElementById('evalTableArea').innerHTML = tableHtml + `</tbody></table>`;
+    };
+
+    window.saveEvaluations = async function() { 
+        window.showLoader('กำลังบันทึก...'); 
+        const evalYear = document.getElementById('evalYear').value;
+        const evalTerm = document.getElementById('evalTerm').value;
+        let upsertData = [];
+        
+        document.querySelectorAll('#evalTableArea tbody tr').forEach(row => { 
+            let id13 = row.getAttribute('data-id13'); let inputs = row.querySelectorAll('.eval-data-input'); 
+            if(inputs.length === 5 && (inputs[0].value || inputs[1].value || inputs[2].value || inputs[3].value || inputs[4].value)) { 
+                upsertData.push({ id13: id13, guidance: inputs[0].value, scout: inputs[1].value, club: inputs[2].value, characteristics: inputs[3].value, reading: inputs[4].value, year: evalYear, term: evalTerm }); 
+            } 
+        }); 
+
+        if (upsertData.length > 0) {
+            const { error } = await supabase.from('evaluations').upsert(upsertData, { onConflict: 'id13,year,term' });
+            if (error) { window.hideLoader(); return window.customAlert('ล้มเหลว', 'error'); }
+            await window.fetchDatabase();
+        }
+        
+        window.hideLoader(); window.customAlert('บันทึกเรียบร้อย!', 'success'); 
+    };
+
+    window.renderPP5Menu = function(container) {
+        container.innerHTML = `<div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-6"><h2 class="text-2xl font-bold text-primary mb-6"><i class="fas fa-file-excel text-secondary mr-2"></i> แบบรายงานผลการพัฒนาคุณภาพผู้เรียน (ปพ.5)</h2><div id="pp5RenderArea" class="bg-slate-200 p-8 rounded-2xl overflow-y-auto shadow-inner max-h-[800px] flex flex-col items-center"><div class="text-center text-slate-400 mt-20"><i class="fas fa-file-alt text-4xl mb-4 opacity-50 block"></i>ฟังก์ชันรายงาน ปพ.5 แบบรวมวิชา (รอเปิดใช้งานในเวอร์ชันถัดไป)</div></div></div>`;
+    };
+
+    window.renderPP5SubjectMenu = function(container) {
+        container.innerHTML = `<div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-6"><h2 class="text-2xl font-bold text-primary mb-6"><i class="fas fa-file-invoice text-secondary mr-2"></i> ปพ.5 สรุปรวมรายวิชา</h2><div id="pp5SubjRenderArea" class="bg-slate-200 p-8 rounded-2xl overflow-y-auto shadow-inner max-h-[800px] flex flex-col items-center"><div class="text-center text-slate-400 mt-20"><i class="fas fa-file-alt text-4xl mb-4 opacity-50 block"></i>ฟังก์ชันรายงาน ปพ.5 แบบแยกวิชา (รอเปิดใช้งานในเวอร์ชันถัดไป)</div></div></div>`;
+    };
+
+    window.renderPP6Menu = function(container) {
+        let allowedClasses = currentUser.role === 'admin' ? [...new Set(db.students.map(s=>s.classRoom))] : db.assignments.filter(a => a.userId === currentUser.id).map(a => a.classRoom);
+        let optionsHtml = allowedClasses.length > 0 ? allowedClasses.map(c => `<option value="${c}">${c}</option>`).join('') : `<option value="">-- ไม่มีสิทธิ์เข้าถึง --</option>`;
+        let isDisabled = allowedClasses.length === 0 ? 'disabled' : '';
+        let cYear = db.settings?.currentYear || '2569';
+        let cTerm = db.settings?.currentTerm || '2';
+
+        container.innerHTML = `<div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8"><h2 class="text-2xl font-bold text-primary mb-6"><i class="fas fa-id-card text-secondary mr-2"></i> สมุดรายงานผลการเรียน (ปพ.6)</h2><div class="flex flex-wrap gap-4 items-end bg-themebg/50 p-5 rounded-2xl border border-secondary/20 mb-6">
+            <div>
+                <label class="block text-xs font-bold text-primary mb-2 uppercase">ปีการศึกษา</label>
+                <input type="text" id="pp6Year" value="${cYear}" class="w-full sm:w-24 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none text-center font-bold text-primary" ${isDisabled}>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-primary mb-2 uppercase">ภาคเรียน</label>
+                <select id="pp6Term" class="w-full sm:w-24 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none text-center font-bold text-secondary" ${isDisabled}>
+                    <option value="1" ${cTerm==='1'?'selected':''}>1</option>
+                    <option value="2" ${cTerm==='2'?'selected':''}>2</option>
+                </select>
+            </div>
+            <div><label class="block text-xs font-bold text-primary mb-2 uppercase">เลือกชั้นเรียน</label><select id="pp6Class" class="w-full sm:w-48 border border-secondary/30 p-3 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none" ${isDisabled}>${optionsHtml}</select></div><button onclick="window.loadPP6List()" class="bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-[#005cbf] shadow-sm transition-colors" ${isDisabled}><i class="fas fa-search mr-2"></i> โหลดรายชื่อ</button><button onclick="window.uploadBulkPP6ToDrive()" class="bg-[#00C6FF] text-white px-6 py-3 rounded-xl shadow-md font-bold hover:bg-[#00b3e6] transition-colors print-hide ml-auto" ${isDisabled}><i class="fab fa-google-drive mr-2"></i> บันทึกลง Storage</button></div><div id="pp6ListArea" class="overflow-x-auto rounded-xl border border-slate-200"><div class="text-center text-slate-400 py-10 font-medium">กรุณาเลือกข้อมูลให้ครบเพื่อดูรายชื่อนักเรียน</div></div></div>`;
+    };
+    
+    window.loadPP6List = function() {
+        const yr = document.getElementById('pp6Year').value;
+        const rm = document.getElementById('pp6Class').value;
+        const students = db.students.filter(s => s.classRoom === rm && s.year === yr).sort((a,b)=>a.number-b.number);
+        if(students.length === 0) { document.getElementById('pp6ListArea').innerHTML = `<div class="text-center text-rose-500 py-10 font-bold">ไม่พบนักเรียนในชั้นเรียนนี้ สำหรับปีการศึกษา ${yr}</div>`; return; }
+        
+        let table = `<table class="w-full text-left border-collapse"><thead><tr class="bg-slate-100 text-slate-600 text-sm border-b border-slate-200"><th class="p-4 font-bold w-20 text-center">เลขที่</th><th class="p-4 font-bold w-40 text-center">รหัส 13 หลัก</th><th class="p-4 font-bold">ชื่อ-สกุล</th><th class="p-4 font-bold text-center">ลิงก์ Storage</th><th class="p-4 font-bold text-center w-32">จัดการ</th></tr></thead><tbody>`;
+        students.forEach(st => { 
+            let driveStatus = st.pdfLink ? `<a href="${st.pdfLink}" target="_blank" class="text-secondary hover:underline font-bold"><i class="fas fa-check-circle"></i> มีไฟล์แล้ว</a>` : `<span class="text-slate-400">-</span>`;
+            table += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3 text-center">${st.number}</td><td class="p-3 text-center font-mono text-slate-500">${st.id13}</td><td class="p-3 font-medium text-slate-800">${st.name}</td><td class="p-3 text-center text-sm">${driveStatus}</td><td class="p-3 text-center"><button onclick="window.previewAdminPP6('${st.id13}')" class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors"><i class="fas fa-eye mr-1"></i> ดู/โหลด ปพ.6</button></td></tr>`; 
+        });
+        document.getElementById('pp6ListArea').innerHTML = table + `</tbody></table>`;
+    };
+
+    window.buildPP6HTML = function(id13) {
+        const yr = document.getElementById('pp6Year')?.value || document.getElementById('searchYear')?.value || '2569';
+        const term = document.getElementById('pp6Term')?.value || document.getElementById('searchTerm')?.value || '2';
+        const student = db.students.find(s => s.id13.toString() === id13.toString() && s.year === yr); 
+        const evalData = db.evaluations[`${yr}_${term}_${id13.toString()}`] || { guidance:'', scout:'', club:'', char:'-', read:'-' };
+        let bR = '', aR = '', tC = 0, tP = 0;
+        let isPrimary = window.isPrimaryClass(student.classRoom);
+        
+        let logoHtml = db.settings?.logoUrl ? `<img src="${db.settings.logoUrl}" crossorigin="anonymous" onerror="this.style.display='none'" alt="School Logo" class="w-[80px] h-[80px] object-contain drop-shadow-md">` : '';
+        let teachersId = db.assignments.filter(a => a.classRoom === student.classRoom).map(a => a.userId);
+        let roomTeachers = db.users.filter(u => teachersId.includes(u.id)).slice(0, 2);
+        
+        let teachersHtml = roomTeachers.length === 0 ? window.createSignatureHTML('ครูประจำชั้น', '', '') : roomTeachers.map(t => window.createSignatureHTML('ครูประจำชั้น', t.name, t.signatureUrl)).join('');
+        let prinHtml = window.createSignatureHTML('ผู้อำนวยการโรงเรียน', db.settings?.principalName || '', db.settings?.principalSigUrl || '', true);
+        
+        db.subjects.filter(s => s.level === student.classRoom).forEach(sub => { 
+            let sc = db.scores[`${yr}_${term}_${id13}_${sub.code}`]; 
+            let accumVal = sc ? sc.accum : ''; let finalVal = sc ? sc.final : '';
+            
+            let calc = window.calculateStudentGrade(student.classRoom, accumVal, finalVal); 
+            let gd = calc.grade; 
+            
+            let rH = '';
+            if (isPrimary) {
+                let t1Str = accumVal !== '' ? accumVal : '-'; let t2Str = finalVal !== '' ? finalVal : '-';
+                rH = `<tr><td class="border border-gray-400 py-1.5 px-2 text-center text-[13px]">${sub.code}</td><td class="border border-gray-400 py-1.5 px-2 text-[13px]">${sub.name}</td><td class="border border-gray-400 py-1.5 px-2 text-center text-[13px]">${sub.credit.toFixed(1)}</td><td class="border border-gray-400 py-1.5 px-2 text-center text-[13px]">${t1Str}</td><td class="border border-gray-400 py-1.5 px-2 text-center text-[13px]">${t2Str}</td><td class="border border-gray-400 py-1.5 px-2 text-center font-bold text-[13px]">${calc.total}</td><td class="border border-gray-400 py-1.5 px-2 text-center font-bold text-blue-600 text-[13px]">${gd}</td><td class="border border-gray-400 py-1.5 px-2 text-center text-[13px]">${calc.percent}</td></tr>`;
+            } else {
+                rH = `<tr><td class="border border-gray-400 py-2 px-2 text-center text-[15px]">${sub.code}</td><td class="border border-gray-400 py-2 px-2 text-[15px]">${sub.name}</td><td class="border border-gray-400 py-2 px-2 text-center text-[15px]">${sub.credit.toFixed(1)}</td><td class="border border-gray-400 py-2 px-2 text-center text-[15px]">${calc.total}</td><td class="border border-gray-400 py-2 px-2 text-center font-bold text-[15px]">${gd}</td></tr>`; 
+            }
+
+            if(window.getSubjectType(sub.code) === 'พื้นฐาน') bR += rH; else aR += rH; 
+            if(gd !== "-" && gd !== "" && gd !== "ร") { tC += sub.credit; tP += parseFloat(gd) * sub.credit; } 
+        });
+
+        let subjectTableHTML = '';
+        if (isPrimary) {
+            subjectTableHTML = `
+            <table class="w-full border-collapse border border-gray-400 mb-4 text-[13px]">
+                <thead><tr class="bg-gray-100 text-center"><th rowspan="2" class="border border-gray-400 py-1 px-1 w-20 font-bold">รหัสวิชา</th><th rowspan="2" class="border border-gray-400 py-1 px-1 font-bold">ชื่อรายวิชา</th><th rowspan="2" class="border border-gray-400 py-1 px-1 w-12 font-bold whitespace-nowrap text-[11px]">หน่วยกิต</th><th colspan="3" class="border border-gray-400 py-1 px-1 font-bold whitespace-nowrap">คะแนน</th><th rowspan="2" class="border border-gray-400 py-1 px-1 w-16 font-bold whitespace-nowrap text-[11px]">ผลการประเมิน<br>เกรด</th><th rowspan="2" class="border border-gray-400 py-1 px-1 w-14 font-bold whitespace-nowrap text-[11px]">ร้อยละ</th></tr><tr class="bg-gray-100 text-center text-[11px]"><th class="border border-gray-400 py-1 px-1 w-14">ภาคเรียนที่ 1</th><th class="border border-gray-400 py-1 px-1 w-14">ภาคเรียนที่ 2</th><th class="border border-gray-400 py-1 px-1 w-14">เฉลี่ยรวม</th></tr></thead>
+                <tbody>
+                    <tr class="bg-gray-50"><td colspan="8" class="border border-gray-400 py-1 px-4 font-bold text-gray-800 text-[13px]">รายวิชาพื้นฐาน</td></tr>
+                    ${bR || `<tr><td colspan="8" class="border border-gray-400 py-2 text-center text-gray-500 text-[13px]">ไม่มีข้อมูล</td></tr>`}
+                    <tr class="bg-gray-50"><td colspan="8" class="border border-gray-400 py-1 px-4 font-bold text-gray-800 text-[13px]">รายวิชาเพิ่มเติม</td></tr>
+                    ${aR || `<tr><td colspan="8" class="border border-gray-400 py-2 text-center text-gray-500 text-[13px]">ไม่มีข้อมูล</td></tr>`}
+                    <tr class="bg-blue-50 font-bold text-[13px]">
+                        <td colspan="2" class="border border-gray-400 py-1.5 px-3 text-right">รวมหน่วยกิต / เกรดเฉลี่ย (GPA)</td><td class="border border-gray-400 py-1.5 px-2 text-center">${tC.toFixed(1)}</td><td colspan="3" class="border border-gray-400 py-1.5 px-2 bg-gray-200"></td><td class="border border-gray-400 py-1.5 px-2 text-center text-lg text-blue-800">${tC > 0 ? (tP / tC).toFixed(2) : "-"}</td><td class="border border-gray-400 py-1.5 px-2 bg-gray-200"></td>
+                    </tr>
+                </tbody>
+            </table>`;
+        } else {
+            subjectTableHTML = `
+            <table class="w-full border-collapse border border-gray-400 mb-4 text-[15px]">
+                <thead><tr class="bg-gray-100"><th class="border border-gray-400 py-1.5 px-2 w-28 font-bold text-center">รหัสวิชา</th><th class="border border-gray-400 py-1.5 px-2 font-bold text-center">ชื่อรายวิชา</th><th class="border border-gray-400 py-1.5 px-2 w-20 font-bold text-center whitespace-nowrap">หน่วยกิต</th><th class="border border-gray-400 py-1.5 px-2 w-20 font-bold text-center whitespace-nowrap">คะแนน</th><th class="border border-gray-400 py-1.5 px-2 w-28 font-bold text-center whitespace-nowrap">ผลการประเมิน</th></tr></thead>
+                <tbody>
+                    <tr class="bg-gray-50"><td colspan="5" class="border border-gray-400 py-1.5 px-4 font-bold text-gray-800 text-[15px]">รายวิชาพื้นฐาน</td></tr>
+                    ${bR || `<tr><td colspan="5" class="border border-gray-400 py-2 text-center text-gray-500 text-[15px]">ไม่มีข้อมูล</td></tr>`}
+                    <tr class="bg-gray-50"><td colspan="5" class="border border-gray-400 py-1.5 px-4 font-bold text-gray-800 text-[15px]">รายวิชาเพิ่มเติม</td></tr>
+                    ${aR || `<tr><td colspan="5" class="border border-gray-400 py-2 text-center text-gray-500 text-[15px]">ไม่มีข้อมูล</td></tr>`}
+                    <tr class="bg-blue-50 font-bold text-[15px]">
+                        <td colspan="2" class="border border-gray-400 py-2 px-3 text-right">รวมหน่วยกิต / เกรดเฉลี่ย (GPA)</td><td class="border border-gray-400 py-2 px-2 text-center">${tC.toFixed(1)}</td><td class="border border-gray-400 py-2 px-2 bg-gray-200"></td><td class="border border-gray-400 py-2 px-2 text-center text-lg text-blue-800">${tC > 0 ? (tP / tC).toFixed(2) : "-"}</td>
+                    </tr>
+                </tbody>
+            </table>`;
+        }
+
+        return `<div id="printPP6Doc_${id13}" class="pdf-portrait text-sm bg-white p-6 sm:p-8" style="height: 296mm; max-height: 296mm; overflow: hidden; box-sizing: border-box; position: relative;">
+            <div class="flex items-center justify-center mb-5 relative"><div class="absolute left-0 top-0">${logoHtml}</div><div class="text-center w-full"><h2 class="text-[20px] font-bold mb-1">สมุดรายงานผลการเรียน (ปพ.6)</h2><p class="text-[16px] font-bold text-slate-800 mb-1">${db.settings?.systemName || 'โรงเรียน'} &nbsp;&nbsp;&nbsp; ภาคเรียนที่ ${term} ปีการศึกษา ${yr}</p><p class="text-[16px] font-bold text-slate-800">สพป.นครราชสีมา เขต 3</p></div></div>
+            <div class="flex justify-between items-center mb-2 font-bold text-[15px] text-gray-700 px-1"><div>เลขประจำตัว: <span class="font-normal text-black">${student.id13}</span></div><div>ชื่อ-สกุล: <span class="font-normal text-black">${student.name}</span></div><div>ชั้น: <span class="font-normal text-black">${student.classRoom}</span></div><div>เลขที่: <span class="font-normal text-black">${student.number}</span></div></div>
+            ${subjectTableHTML}
+            <div class="flex items-start"><div class="w-[60%] flex flex-col space-y-3"><table class="w-full border-collapse border border-gray-400 text-[15px]"><thead><tr class="bg-gray-100"><th class="border border-gray-400 py-1.5 px-4 font-bold text-center">กิจกรรมพัฒนาผู้เรียน</th><th class="border border-gray-400 py-1.5 px-2 w-32 font-bold text-center whitespace-nowrap">ผลการประเมิน</th></tr></thead><tbody><tr><td class="border border-gray-400 py-1 px-3"><div class="flex justify-between"><span>กิจกรรมแนะแนว</span><span></span></div></td><td class="border border-gray-400 py-1 px-2 text-center font-bold ${evalData.guidance === 'ผ่าน' ? 'text-green-600' : 'text-rose-600'}">${evalData.guidance || '-'}</td></tr><tr><td class="border border-gray-400 py-1 px-3"><div class="flex justify-between"><span>ลูกเสือ เนตรนารี</span><span></span></div></td><td class="border border-gray-400 py-1 px-2 text-center font-bold ${evalData.scout === 'ผ่าน' ? 'text-green-600' : 'text-rose-600'}">${evalData.scout || '-'}</td></tr><tr><td class="border border-gray-400 py-1 px-3"><div class="flex justify-between"><span>ชุมนุม / ชมรม</span><span></span></div></td><td class="border border-gray-400 py-1 px-2 text-center font-bold ${evalData.club === 'ผ่าน' ? 'text-green-600' : 'text-rose-600'}">${evalData.club || '-'}</td></tr></tbody></table><table class="w-full border-collapse border border-gray-400 text-[15px]"><thead><tr class="bg-gray-100"><th class="border border-gray-400 py-1.5 px-4 font-bold text-center">ประเมินคุณลักษณะฯ และ อ่านคิดวิเคราะห์ฯ</th><th class="border border-gray-400 py-1.5 px-2 w-32 font-bold text-center whitespace-nowrap">ผลการประเมิน</th></tr></thead><tbody><tr><td class="border border-gray-400 py-1 px-3">คุณลักษณะอันพึงประสงค์</td><td class="border border-gray-400 py-1 px-2 text-center font-bold text-blue-600">${evalData.char || '-'}</td></tr><tr><td class="border border-gray-400 py-1 px-3">อ่าน คิดวิเคราะห์ เขียน</td><td class="border border-gray-400 py-1 px-2 text-center font-bold text-blue-600">${evalData.read || '-'}</td></tr></tbody></table></div><div class="w-[40%] flex flex-col items-center justify-start pt-2 pl-4 space-y-4">${teachersHtml}${prinHtml}</div></div>
+        </div>`;
+    };
+
+    window.previewAdminPP6 = function(id13) { currentPrintId13 = id13; document.getElementById('pp6ModalContent').innerHTML = window.buildPP6HTML(id13); document.getElementById('pp6Modal').classList.remove('hidden'); };
+    
+    window.printAdminPP6 = function() {
+        if(!currentPrintId13) return; 
+        let el = document.getElementById('printPP6Doc_' + currentPrintId13);
+        if(!el) return;
+        let printWin = window.open('', '', 'width=900,height=650');
+        let styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('\n');
+        printWin.document.write(`<html><head><title>พิมพ์ ปพ.6</title>${styles}<script src="https://cdn.tailwindcss.com"><\/script><style>body { font-family: 'Sarabun', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; margin: 0; } .pdf-portrait { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 12mm 15mm; box-sizing: border-box; box-shadow: none; page-break-after: always; } @media print { @page { size: A4 portrait; margin: 0; } body { background: white; } .pdf-portrait { width: 100%; margin: 0; padding: 12mm 15mm; min-height: auto; } }</style></head><body onload="setTimeout(() => { window.print(); window.close(); }, 500)">${el.outerHTML}</body></html>`);
+        printWin.document.close();
+    };
+
+    window.downloadAdminPP6 = function() { 
+        if(!currentPrintId13) return; 
+        window.showLoader('กำลังสร้าง PDF ปพ.6...'); 
+        const yr = document.getElementById('pp6Year').value, sm = document.getElementById('pp6Term').value;
+        html2pdf().set({ margin: 0, filename: `ปพ6_${currentPrintId13}_ปี${yr}_เทอม${sm}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(document.getElementById('printPP6Doc_' + currentPrintId13)).save().then(() => window.hideLoader()).catch(err => { window.hideLoader(); window.customAlert('ไม่สามารถสร้าง PDF ได้', 'error'); }); 
+    };
+
+    window.uploadBulkPP6ToDrive = async function() {
+        const yr = document.getElementById('pp6Year').value, selClass = document.getElementById('pp6Class').value;
+        if(!yr || !selClass) return window.customAlert('กรุณาเลือกข้อมูลให้ครบ', 'warning');
+        
+        const students = db.students.filter(s => s.classRoom === selClass && s.year === yr);
+        if(students.length === 0) return window.customAlert('ไม่พบนักเรียน', 'warning');
+
+        window.customConfirm(`ระบบจะทำการสร้าง PDF และอัปโหลดลง Storage (จำนวน ${students.length} คน)\n\nขั้นตอนนี้จะใช้เวลาสักครู่`, async function() {
+            let successCount = 0; window.scrollTo(0, 0); document.body.classList.remove('overflow-hidden');
+
+            for(let i=0; i<students.length; i++) {
+                let st = students[i]; window.showLoader(`กำลังอัปโหลด ปพ.6 ลง Storage\n(คนที่ ${i+1}/${students.length})`);
+                
+                let tempContainer = document.createElement('div');
+                tempContainer.style.position = 'absolute'; tempContainer.style.top = '0'; tempContainer.style.left = '0'; tempContainer.style.width = '210mm'; tempContainer.style.backgroundColor = '#ffffff'; tempContainer.style.zIndex = '80'; 
+                tempContainer.innerHTML = window.buildPP6HTML(st.id13).replace('box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);', ''); document.body.appendChild(tempContainer);
+                
+                await new Promise(r => setTimeout(r, 1000));
+                
+                let opt = { margin: 0, filename: `pp6.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+
+                try {
+                    let base64str = await html2pdf().set(opt).from(tempContainer).outputPdf('datauristring');
+                    let resFetch = await fetch(base64str); let blob = await resFetch.blob();
+                    
+                    let fileName = `ปพ6_${st.id13}_${yr}.pdf`; let filePath = `${yr}/${selClass.replace('/','-')}/${fileName}`;
+                    const { error } = await supabase.storage.from('reports').upload(filePath, blob, { contentType: 'application/pdf', upsert: true });
+                    
+                    if (!error) {
+                        const { data: linkData } = supabase.storage.from('reports').getPublicUrl(filePath);
+                        await supabase.from('students').update({ pdf_link: linkData.publicUrl }).eq('id13', st.id13).eq('year', yr);
+                        st.pdfLink = linkData.publicUrl; successCount++;
+                    }
+                } catch(e) {}
+                document.body.removeChild(tempContainer);
+            }
+            document.body.classList.add('overflow-hidden'); window.hideLoader(); window.loadPP6List(); window.customAlert(`บันทึกไฟล์สำเร็จ ${successCount} คน`, 'success');
+        });
+    };
+
+    // ==========================================
+    // PUBLIC VIEW SEARCH (SUPABASE)
+    // ==========================================
+    window.searchStudentResult = async function() { 
+        const id13 = document.getElementById('searchId13').value.trim(); 
+        const searchYear = document.getElementById('searchYear').value;
+        const searchTerm = document.getElementById('searchTerm').value;
+        if(id13.length !== 13) return window.customAlert('กรุณาระบุเลขประจำตัวประชาชน 13 หลัก', 'warning');
+
+        window.showLoader('กำลังตรวจสอบข้อมูลในฐานข้อมูล...'); 
+        
+        try {
+            const { data: set } = await supabase.from('settings').select('*');
+            if(set) { db.settings = {}; set.forEach(r => db.settings[r.key] = r.value); window.updateDynamicSystemNames(); }
+            
+            const { data: student, error } = await supabase.from('students').select('*').eq('id13', id13).eq('year', searchYear).single();
+            if (error || !student) { window.hideLoader(); return window.customAlert(`ไม่พบข้อมูลนักเรียนรหัสนี้ (ปีการศึกษา ${searchYear})`, 'error'); }
+
+            const [subRes, scRes, evRes] = await Promise.all([
+                supabase.from('subjects').select('*').eq('level', student.class_room),
+                supabase.from('scores').select('*').eq('id13', id13).eq('year', searchYear).eq('term', searchTerm),
+                supabase.from('evaluations').select('*').eq('id13', id13).eq('year', searchYear).eq('term', searchTerm).single()
+            ]);
+
+            db.students = [{ id13: student.id13, number: student.number, name: student.name, classRoom: student.class_room, pdfLink: student.pdf_link, year: student.year }];
+            db.subjects = subRes.data.map(r => ({code: r.code, name: r.name, credit: parseFloat(r.credit), level: r.level, teacher: r.teacher_name}));
+            db.scores = {}; if(scRes.data) scRes.data.forEach(r => { db.scores[`${r.year}_${r.term}_${r.id13}_${r.subject_code}`] = {accum: r.accum_score || '', final: r.final_score || ''}; });
+            db.evaluations = {}; if(evRes.data) db.evaluations[`${evRes.data.year}_${evRes.data.term}_${evRes.data.id13}`] = {guidance: evRes.data.guidance, scout: evRes.data.scout, club: evRes.data.club, char: evRes.data.characteristics, read: evRes.data.reading};
+            
+            window.hideLoader();
+            document.getElementById('pdfRenderArea').innerHTML = window.buildPP6HTML(id13); 
+            currentPrintId13 = id13; 
+            document.getElementById('publicResultContainer').classList.remove('hidden'); 
+            document.getElementById('publicResultContainer').classList.add('flex'); 
+            setTimeout(() => { document.getElementById('publicResultContainer').scrollIntoView({ behavior: 'smooth' }); }, 300);
+        } catch(e) { window.hideLoader(); window.customAlert('ขัดข้องระหว่างเชื่อมต่อฐานข้อมูล', 'error'); }
+    };
+    
+    window.clearSearch = function() { 
+        document.getElementById('searchId13').value = ''; 
+        document.getElementById('publicResultContainer').classList.add('hidden'); 
+        document.getElementById('publicResultContainer').classList.remove('flex');
+        document.getElementById('pdfRenderArea').innerHTML = ''; 
+        currentPrintId13 = null; 
+    };
+    
+    window.resetPublicView = function() { 
+        window.clearSearch(); 
+        window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    };
+    
+    window.exportPublicPDF = function() { 
+        window.showLoader('สร้าง PDF...'); html2pdf().set({margin:0,filename:`ปพ6.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(document.getElementById('pdfRenderArea').firstChild).save().then(window.hideLoader);
+    };
+
+    document.addEventListener("DOMContentLoaded", async function() {
+        let searchYearEl = document.getElementById('searchYear');
+        if(searchYearEl) {
+            let baseYear = 2569;
+            let optionsHtml = '';
+            for (let y = baseYear - 5; y <= baseYear + 2; y++) {
+                optionsHtml += `<option value="${y}" ${y === baseYear ? 'selected' : ''}>${y}</option>`;
+            }
+            searchYearEl.innerHTML = optionsHtml;
+        }
+        
+        try {
+            const { data } = await supabase.from('settings').select('*');
+            if(data) {
+                data.forEach(r => { db.settings[r.key] = r.value; });
+                window.updateDynamicSystemNames();
+            }
+        } catch(e) {}
+
+        setTimeout(() => { window.switchLoginMode('student'); }, 100);
+    });
+</script>
+</body>
+</html>
