@@ -93,6 +93,26 @@
             box-sizing: border-box; 
         }
         
+        /* โครงสร้างตาราง ปพ.6 */
+        .pp6-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 12px; 
+        }
+        .pp6-table th, .pp6-table td { 
+            border: 1px solid #718096; 
+            padding: 4px 6px; 
+        }
+        .pp6-table thead th { 
+            background-color: #f1f5f9; 
+            text-align: center; 
+            font-weight: bold; 
+        }
+        .pp6-bg-group { 
+            background-color: #f8fafc; 
+            font-weight: bold; 
+        }
+        
         .print-hide { display: block; } 
         @media print { 
             .print-hide { display: none !important; } 
@@ -294,6 +314,37 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- คู่มือสำหรับมือถือ (แสดงเฉพาะหน้าจอเล็ก) นำกลับมาใส่ตรงนี้ครับ -->
+                    <div class="block lg:hidden w-full max-w-[420px] mt-8 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 mb-8">
+                        <h3 class="text-lg font-bold mb-5 flex items-center text-[#0097a7]">
+                            <i class="fas fa-book-open mr-2"></i> คู่มือการใช้งานเบื้องต้น
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">1</div>
+                                <div>
+                                    <h4 class="font-bold text-[14px] text-slate-800">เลือกโหมดผู้ใช้งาน</h4>
+                                    <p class="text-[12px] text-slate-500 mt-0.5">นักเรียน หรือ ครู/ผู้ดูแล</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">2</div>
+                                <div>
+                                    <h4 class="font-bold text-[14px] text-slate-800">กรอกข้อมูล</h4>
+                                    <p class="text-[12px] text-slate-500 mt-0.5">นักเรียนใช้เลข ปชช. 13 หลัก, ครูใช้ Username</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 text-[#0097a7] flex items-center justify-center font-bold shrink-0 text-xs">3</div>
+                                <div>
+                                    <h4 class="font-bold text-[14px] text-slate-800">ตรวจสอบและดาวน์โหลด</h4>
+                                    <p class="text-[12px] text-slate-500 mt-0.5">กดค้นหาเพื่อดูและบันทึก ปพ.6 เป็น PDF</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
                 </div>
             </div>
 
